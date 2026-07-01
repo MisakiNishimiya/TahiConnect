@@ -1,9 +1,10 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use App\Models\Shop;
 
-new class extends Component {
+new #[Layout('components.layouts.app')] class extends Component {
     public $shop;
 
     public function mount()

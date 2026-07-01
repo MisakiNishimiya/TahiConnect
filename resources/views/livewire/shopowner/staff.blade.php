@@ -1,10 +1,11 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use App\Models\User;
 
-new class extends Component {
+new #[Layout('components.layouts.app')] class extends Component {
     use WithPagination;
 
     public function with()
@@ -30,37 +31,37 @@ new class extends Component {
     <div class="tc-card">
         <div class="overflow-x-auto">
             <flux:table>
-                <flux:columns>
-                    <flux:column>Name</flux:column>
-                    <flux:column>Email</flux:column>
-                    <flux:column>Contact</flux:column>
-                    <flux:column>Active Orders</flux:column>
-                    <flux:column>Actions</flux:column>
-                </flux:columns>
-                <flux:rows>
+                <flux:table.columns>
+                    <flux:table.column>Name</flux:table.column>
+                    <flux:table.column>Email</flux:table.column>
+                    <flux:table.column>Contact</flux:table.column>
+                    <flux:table.column>Active Orders</flux:table.column>
+                    <flux:table.column>Actions</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
                     @forelse($staffMembers as $staff)
-                        <flux:row>
-                            <flux:cell>
+                        <flux:table.row>
+                            <flux:table.cell>
                                 <div class="flex items-center gap-3">
                                     <flux:avatar size="sm" :initials="$staff->initials()" />
                                     <span class="font-medium">{{ $staff->name }}</span>
                                 </div>
-                            </flux:cell>
-                            <flux:cell>{{ $staff->email }}</flux:cell>
-                            <flux:cell>{{ $staff->contact_number ?? 'N/A' }}</flux:cell>
-                            <flux:cell>
+                            </flux:table.cell>
+                            <flux:table.cell>{{ $staff->email }}</flux:table.cell>
+                            <flux:table.cell>{{ $staff->contact_number ?? 'N/A' }}</flux:table.cell>
+                            <flux:table.cell>
                                 <flux:badge size="sm">{{ $staff->assignedOrders()->whereNotIn('status', ['completed', 'released'])->count() }} Active</flux:badge>
-                            </flux:cell>
-                            <flux:cell>
+                            </flux:table.cell>
+                            <flux:table.cell>
                                 <flux:button size="sm" variant="ghost" icon="pencil-square" />
-                            </flux:cell>
-                        </flux:row>
+                            </flux:table.cell>
+                        </flux:table.row>
                     @empty
-                        <flux:row>
-                            <flux:cell colspan="5" class="text-center py-8 text-zinc-500">No staff members found.</flux:cell>
-                        </flux:row>
+                        <flux:table.row>
+                            <flux:table.cell colspan="5" class="text-center py-8 text-zinc-500">No staff members found.</flux:table.cell>
+                        </flux:table.row>
                     @endforelse
-                </flux:rows>
+                </flux:table.rows>
             </flux:table>
         </div>
         

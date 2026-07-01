@@ -1,10 +1,11 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use App\Models\GarmentType;
 use App\Models\Fabric;
 
-new class extends Component {
+new #[Layout('components.layouts.app')] class extends Component {
     public function with()
     {
         $shopId = auth()->user()->shop_id;

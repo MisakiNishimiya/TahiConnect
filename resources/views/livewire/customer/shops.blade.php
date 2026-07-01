@@ -1,10 +1,11 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use App\Models\Shop;
 
-new class extends Component {
+new #[Layout('components.layouts.app')] class extends Component {
     use WithPagination;
 
     public $search = '';
@@ -92,7 +93,7 @@ new class extends Component {
                     @endif
                 </div>
                 
-                <flux:button class="w-full" variant="primary">View Shop & Book</flux:button>
+                <flux:button class="w-full" variant="primary" :href="route('customer.shop.show', $shop->id)" wire:navigate>View Shop & Book</flux:button>
             </div>
         @empty
             <div class="col-span-full tc-card text-center py-12 text-zinc-500">

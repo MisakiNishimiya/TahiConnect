@@ -1,12 +1,13 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Shop;
 use Carbon\Carbon;
 
-new class extends Component {
+new #[Layout('components.layouts.app')] class extends Component {
     public function with()
     {
         $shopId = auth()->user()->shop_id;
@@ -92,21 +93,21 @@ new class extends Component {
 
         <div class="overflow-x-auto">
             <flux:table>
-                <flux:columns>
-                    <flux:column>Tracking No.</flux:column>
-                    <flux:column>Customer</flux:column>
-                    <flux:column>Garment</flux:column>
-                    <flux:column>Amount</flux:column>
-                    <flux:column>Status</flux:column>
-                </flux:columns>
-                <flux:rows>
+                <flux:table.columns>
+                    <flux:table.column>Tracking No.</flux:table.column>
+                    <flux:table.column>Customer</flux:table.column>
+                    <flux:table.column>Garment</flux:table.column>
+                    <flux:table.column>Amount</flux:table.column>
+                    <flux:table.column>Status</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
                     @foreach($recentOrders as $order)
-                        <flux:row>
-                            <flux:cell class="font-medium">{{ $order->tracking_number }}</flux:cell>
-                            <flux:cell>{{ $order->user->name }}</flux:cell>
-                            <flux:cell>{{ $order->garmentType->name }}</flux:cell>
-                            <flux:cell>₱{{ number_format($order->total_amount, 2) }}</flux:cell>
-                            <flux:cell>
+                        <flux:table.row>
+                            <flux:table.cell class="font-medium">{{ $order->tracking_number }}</flux:table.cell>
+                            <flux:table.cell>{{ $order->user->name }}</flux:table.cell>
+                            <flux:table.cell>{{ $order->garmentType->name }}</flux:table.cell>
+                            <flux:table.cell>₱{{ number_format($order->total_amount, 2) }}</flux:table.cell>
+                            <flux:table.cell>
                                 <flux:badge color="{{ match($order->status) {
                                     'completed', 'released' => 'green',
                                     'pending' => 'zinc',
@@ -115,10 +116,10 @@ new class extends Component {
                                 } }}" size="sm">
                                     {{ str_replace('_', ' ', Str::title($order->status)) }}
                                 </flux:badge>
-                            </flux:cell>
-                        </flux:row>
+                            </flux:table.cell>
+                        </flux:table.row>
                     @endforeach
-                </flux:rows>
+                </flux:table.rows>
             </flux:table>
             @if($recentOrders->isEmpty())
                 <div class="py-8 text-center text-zinc-500">No orders yet.</div>

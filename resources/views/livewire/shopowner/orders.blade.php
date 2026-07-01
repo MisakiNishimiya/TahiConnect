@@ -1,10 +1,11 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use App\Models\Order;
 
-new class extends Component {
+new #[Layout('components.layouts.app')] class extends Component {
     use WithPagination;
 
     public $search = '';
@@ -65,27 +66,27 @@ new class extends Component {
 
         <div class="overflow-x-auto">
             <flux:table>
-                <flux:columns>
-                    <flux:column>Tracking No.</flux:column>
-                    <flux:column>Customer</flux:column>
-                    <flux:column>Garment</flux:column>
-                    <flux:column>Assigned Staff</flux:column>
-                    <flux:column>Amount</flux:column>
-                    <flux:column>Status</flux:column>
-                    <flux:column>Est. Completion</flux:column>
-                </flux:columns>
-                <flux:rows>
+                <flux:table.columns>
+                    <flux:table.column>Tracking No.</flux:table.column>
+                    <flux:table.column>Customer</flux:table.column>
+                    <flux:table.column>Garment</flux:table.column>
+                    <flux:table.column>Assigned Staff</flux:table.column>
+                    <flux:table.column>Amount</flux:table.column>
+                    <flux:table.column>Status</flux:table.column>
+                    <flux:table.column>Est. Completion</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
                     @forelse($orders as $order)
-                        <flux:row>
-                            <flux:cell class="font-medium">{{ $order->tracking_number }}</flux:cell>
-                            <flux:cell>
+                        <flux:table.row>
+                            <flux:table.cell class="font-medium">{{ $order->tracking_number }}</flux:table.cell>
+                            <flux:table.cell>
                                 <div class="flex items-center gap-2">
                                     <flux:avatar size="xs" :initials="$order->user->initials()" />
                                     <span>{{ $order->user->name }}</span>
                                 </div>
-                            </flux:cell>
-                            <flux:cell>{{ $order->garmentType->name }} (x{{ $order->quantity }})</flux:cell>
-                            <flux:cell>
+                            </flux:table.cell>
+                            <flux:table.cell>{{ $order->garmentType->name }} (x{{ $order->quantity }})</flux:table.cell>
+                            <flux:table.cell>
                                 @if($order->staff)
                                     <div class="flex items-center gap-2">
                                         <flux:avatar size="xs" :initials="$order->staff->initials()" />
@@ -94,9 +95,9 @@ new class extends Component {
                                 @else
                                     <span class="text-zinc-400">Unassigned</span>
                                 @endif
-                            </flux:cell>
-                            <flux:cell>₱{{ number_format($order->total_amount, 2) }}</flux:cell>
-                            <flux:cell>
+                            </flux:table.cell>
+                            <flux:table.cell>₱{{ number_format($order->total_amount, 2) }}</flux:table.cell>
+                            <flux:table.cell>
                                 <flux:badge color="{{ match($order->status) {
                                     'completed', 'released' => 'green',
                                     'pending' => 'zinc',
@@ -105,15 +106,15 @@ new class extends Component {
                                 } }}" size="sm">
                                     {{ str_replace('_', ' ', Str::title($order->status)) }}
                                 </flux:badge>
-                            </flux:cell>
-                            <flux:cell>{{ $order->estimated_completion?->format('M d, Y') ?? 'N/A' }}</flux:cell>
-                        </flux:row>
+                            </flux:table.cell>
+                            <flux:table.cell>{{ $order->estimated_completion?->format('M d, Y') ?? 'N/A' }}</flux:table.cell>
+                        </flux:table.row>
                     @empty
-                        <flux:row>
-                            <flux:cell colspan="7" class="text-center py-8 text-zinc-500">No orders found.</flux:cell>
-                        </flux:row>
+                        <flux:table.row>
+                            <flux:table.cell colspan="7" class="text-center py-8 text-zinc-500">No orders found.</flux:table.cell>
+                        </flux:table.row>
                     @endforelse
-                </flux:rows>
+                </flux:table.rows>
             </flux:table>
         </div>
         

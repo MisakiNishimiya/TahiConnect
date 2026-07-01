@@ -24,6 +24,8 @@ Route::get('/dashboard', function () {
 Route::middleware(['auth'])->prefix('customer')->group(function () {
     Volt::route('/dashboard', 'customer.dashboard')->name('customer.dashboard');
     Volt::route('/shops', 'customer.shops')->name('customer.shops');
+    Volt::route('/shop/{shop}', 'customer.shop.show')->name('customer.shop.show');
+    Volt::route('/shop/{shop}/book', 'customer.shop.book')->name('customer.shop.book');
     Volt::route('/measurements', 'customer.measurements')->name('customer.measurements');
     Volt::route('/appointments', 'customer.appointments')->name('customer.appointments');
     Volt::route('/orders', 'customer.orders')->name('customer.orders');

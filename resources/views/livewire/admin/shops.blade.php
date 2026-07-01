@@ -1,10 +1,11 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Livewire\WithPagination;
 use App\Models\Shop;
 
-new class extends Component {
+new #[Layout('components.layouts.app')] class extends Component {
     use WithPagination;
 
     public $search = '';
@@ -48,43 +49,43 @@ new class extends Component {
 
         <div class="overflow-x-auto">
             <flux:table>
-                <flux:columns>
-                    <flux:column>Shop Name</flux:column>
-                    <flux:column>Owner</flux:column>
-                    <flux:column>Location</flux:column>
-                    <flux:column>Rating</flux:column>
-                    <flux:column>Status</flux:column>
-                    <flux:column>Actions</flux:column>
-                </flux:columns>
-                <flux:rows>
+                <flux:table.columns>
+                    <flux:table.column>Shop Name</flux:table.column>
+                    <flux:table.column>Owner</flux:table.column>
+                    <flux:table.column>Location</flux:table.column>
+                    <flux:table.column>Rating</flux:table.column>
+                    <flux:table.column>Status</flux:table.column>
+                    <flux:table.column>Actions</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
                     @forelse($shops as $shop)
-                        <flux:row>
-                            <flux:cell class="font-bold">{{ $shop->name }}</flux:cell>
-                            <flux:cell>{{ $shop->owner?->name ?? 'Unassigned' }}</flux:cell>
-                            <flux:cell>{{ $shop->barangay }}, {{ $shop->city }}</flux:cell>
-                            <flux:cell>
+                        <flux:table.row>
+                            <flux:table.cell class="font-bold">{{ $shop->name }}</flux:table.cell>
+                            <flux:table.cell>{{ $shop->owner?->name ?? 'Unassigned' }}</flux:table.cell>
+                            <flux:table.cell>{{ $shop->barangay }}, {{ $shop->city }}</flux:table.cell>
+                            <flux:table.cell>
                                 <div class="flex items-center gap-1">
                                     <flux:icon.star class="size-3 text-yellow-500" />
                                     <span>{{ $shop->rating }}</span>
                                 </div>
-                            </flux:cell>
-                            <flux:cell>
+                            </flux:table.cell>
+                            <flux:table.cell>
                                 @if($shop->is_verified)
                                     <flux:badge color="green" size="sm">Verified</flux:badge>
                                 @else
                                     <flux:badge color="zinc" size="sm">Unverified</flux:badge>
                                 @endif
-                            </flux:cell>
-                            <flux:cell>
+                            </flux:table.cell>
+                            <flux:table.cell>
                                 <flux:button size="sm" variant="ghost" wire:click="toggleVerification({{ $shop->id }})">Toggle Status</flux:button>
-                            </flux:cell>
-                        </flux:row>
+                            </flux:table.cell>
+                        </flux:table.row>
                     @empty
-                        <flux:row>
-                            <flux:cell colspan="6" class="text-center py-8 text-zinc-500">No shops found.</flux:cell>
-                        </flux:row>
+                        <flux:table.row>
+                            <flux:table.cell colspan="6" class="text-center py-8 text-zinc-500">No shops found.</flux:table.cell>
+                        </flux:table.row>
                     @endforelse
-                </flux:rows>
+                </flux:table.rows>
             </flux:table>
         </div>
         <div class="mt-4">

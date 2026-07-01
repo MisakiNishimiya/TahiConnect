@@ -3,15 +3,24 @@
 use App\Models\Order;
 use App\Models\GarmentType;
 use App\Models\Fabric;
+use App\Models\VirtualTryon;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
+use Livewire\WithFileUploads;
 
 new #[Layout('components.layouts.app')] class extends Component {
+    use WithFileUploads;
+
     public string $activeTab = 'all';
     public string $garment_type_id = '';
     public string $fabric_preference = '';
     public string $quantity = '1';
     public string $special_instructions = '';
+    
+    // New properties for design reference
+    public $reference_upload;
+    public string $selected_ai_preview = '';
+    
     public bool $showModal = false;
 
     public function createOrder(): void
@@ -21,35 +30,58 @@ new #[Layout('components.layouts.app')] class extends Component {
             'fabric_preference' => 'nullable|string',
             'quantity' => 'required|integer|min:1',
             'special_instructions' => 'nullable|string|max:1000',
+            'reference_upload' => 'nullable|image|max:10240', // 10MB Max
         ]);
+
+        $designPath = null;
+        
+        // Handle file upload
+        if ($this->reference_upload) {
+            $designPath = $this->reference_upload->store('design-references', 'public');
+        } 
+        // Or handle selected AI preview
+        elseif ($this->selected_ai_preview) {
+            $tryon = VirtualTryon::find($this->selected_ai_preview);
+            if ($tryon && $tryon->user_id === auth()->id()) {
+                $designPath = $tryon->preview_path;
+            }
+        }
 
         $garment = GarmentType::find($this->garment_type_id);
         Order::create([
             'user_id' => auth()->id(),
+            // Ensure shop_id is assigned if the garment belongs to a shop
+            'shop_id' => $garment->shop_id ?? null,
             'tracking_number' => 'TC-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
             'garment_type_id' => $this->garment_type_id,
             'fabric_preference' => $this->fabric_preference,
             'quantity' => (int) $this->quantity,
             'special_instructions' => $this->special_instructions,
+            'design_reference_path' => $designPath,
             'total_amount' => $garment->base_price * (int) $this->quantity,
             'status' => 'pending',
             'estimated_completion' => now()->addDays(21),
         ]);
 
-        $this->reset(['garment_type_id', 'fabric_preference', 'quantity', 'special_instructions', 'showModal']);
+        $this->reset(['garment_type_id', 'fabric_preference', 'quantity', 'special_instructions', 'reference_upload', 'selected_ai_preview', 'showModal']);
         session()->flash('message', 'Order placed successfully!');
     }
 
     public function with(): array
     {
-        $query = Order::where('user_id', auth()->id())->with('garmentType')->latest();
+        $query = Order::where('user_id', auth()->id())->with(['garmentType', 'shop'])->latest();
         if ($this->activeTab !== 'all') {
             $query->where('status', $this->activeTab);
         }
         return [
             'orders' => $query->get(),
-            'garmentTypes' => GarmentType::all(),
+            'garmentTypes' => GarmentType::with('shop')->get(),
             'fabrics' => Fabric::where('in_stock', true)->get(),
+            'aiPreviews' => VirtualTryon::where('user_id', auth()->id())
+                                ->where('status', 'completed')
+                                ->whereNotNull('preview_path')
+                                ->latest()
+                                ->get(),
             'statusCounts' => [
                 'all' => Order::where('user_id', auth()->id())->count(),
                 'pending' => Order::where('user_id', auth()->id())->where('status', 'pending')->count(),
@@ -97,7 +129,8 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <span class="tc-badge tc-badge-{{ $order->status }}">{{ ucwords(str_replace('_', ' ', $order->status)) }}</span>
                 </div>
                 <h3 class="font-semibold text-zinc-900 dark:text-white">{{ $order->garmentType?->name ?? 'Custom' }}</h3>
-                <div class="mt-2 space-y-1 text-sm text-zinc-500">
+                <p class="text-xs text-zinc-500 mb-2">{{ $order->shop?->name ?? 'Unassigned Shop' }}</p>
+                <div class="space-y-1 text-sm text-zinc-500">
                     @if($order->fabric_preference)
                         <p>Fabric: {{ $order->fabric_preference }}</p>
                     @endif
@@ -127,33 +160,90 @@ new #[Layout('components.layouts.app')] class extends Component {
     <!-- New Order Modal -->
     @if($showModal)
     <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" wire:click.self="$set('showModal', false)">
-        <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-xl max-w-lg w-full mx-4 p-6">
+        <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-xl max-w-2xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-6">
                 <h2 class="text-xl font-bold text-zinc-900 dark:text-white" style="font-family: 'Poppins';">Create New Order</h2>
                 <button wire:click="$set('showModal', false)" class="text-zinc-400 hover:text-zinc-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>
-            <form wire:submit="createOrder" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Garment Type</label>
-                    <select wire:model="garment_type_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 text-sm" required>
-                        <option value="">Select garment type...</option>
-                        @foreach($garmentTypes as $gt)
-                            <option value="{{ $gt->id }}">{{ $gt->name }} — ₱{{ number_format($gt->base_price, 2) }}</option>
-                        @endforeach
-                    </select>
+            <form wire:submit="createOrder" class="space-y-6">
+                
+                <!-- Step 1: Garment & Fabric -->
+                <div class="space-y-4 pb-6 border-b border-zinc-200 dark:border-zinc-700">
+                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">1. Garment Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Garment Type <span class="text-red-500">*</span></label>
+                            <select wire:model="garment_type_id" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 text-sm" required>
+                                <option value="">Select garment type...</option>
+                                @foreach($garmentTypes as $gt)
+                                    <option value="{{ $gt->id }}">{{ $gt->name }} ({{ $gt->shop?->name ?? 'Global' }}) — ₱{{ number_format($gt->base_price, 2) }}</option>
+                                @endforeach
+                            </select>
+                            @error('garment_type_id') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Fabric Preference</label>
+                            <select wire:model="fabric_preference" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 text-sm">
+                                <option value="">Select fabric (optional)...</option>
+                                @foreach($fabrics as $fabric)
+                                    <option value="{{ $fabric->name }}">{{ $fabric->name }} ({{ $fabric->material }}) — ₱{{ number_format($fabric->price_per_meter, 2) }}/m</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="md:col-span-1">
+                            <flux:input wire:model="quantity" label="Quantity" type="number" min="1" required />
+                        </div>
+                        <div class="md:col-span-2">
+                            <flux:textarea wire:model="special_instructions" label="Special Instructions" placeholder="Embroidery pattern, fit preference..." rows="2" />
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">Fabric Preference</label>
-                    <select wire:model="fabric_preference" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 text-sm">
-                        <option value="">Select fabric...</option>
-                        @foreach($fabrics as $fabric)
-                            <option value="{{ $fabric->name }}">{{ $fabric->name }} ({{ $fabric->material }}) — ₱{{ number_format($fabric->price_per_meter, 2) }}/m</option>
-                        @endforeach
-                    </select>
+
+                <!-- Step 2: Design Reference -->
+                <div class="space-y-4">
+                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white uppercase tracking-wider">2. Design Reference</h3>
+                    <p class="text-sm text-zinc-500">Provide a visual reference for the tailor. You can either upload a photo or choose an AI preview you generated earlier.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Option A: Upload -->
+                        <div class="border rounded-xl p-4 transition-colors {{ $reference_upload ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/10' : 'border-zinc-200 dark:border-zinc-700' }} {{ $selected_ai_preview ? 'opacity-50 grayscale pointer-events-none' : '' }}">
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Upload Photo</label>
+                            <input type="file" wire:model="reference_upload" accept="image/*" class="block w-full text-sm text-zinc-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-400 cursor-pointer" />
+                            <div wire:loading wire:target="reference_upload" class="text-xs text-primary-500 mt-2 font-medium">Uploading...</div>
+                            @if ($reference_upload)
+                                <div class="mt-3 relative w-20 h-20 rounded-lg overflow-hidden border border-primary-200">
+                                    <img src="{{ $reference_upload->temporaryUrl() }}" class="object-cover w-full h-full" alt="Preview">
+                                </div>
+                            @endif
+                            @error('reference_upload') <span class="text-xs text-red-500 mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+
+                        <!-- Option B: Select AI Preview -->
+                        <div class="border rounded-xl p-4 transition-colors {{ $selected_ai_preview ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/10' : 'border-zinc-200 dark:border-zinc-700' }} {{ $reference_upload ? 'opacity-50 grayscale pointer-events-none' : '' }}">
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Or Select AI Preview</label>
+                            <select wire:model="selected_ai_preview" class="w-full rounded-lg border-zinc-300 dark:border-zinc-600 dark:bg-zinc-700 text-sm mb-3">
+                                <option value="">Select a past preview...</option>
+                                @foreach($aiPreviews as $preview)
+                                    <option value="{{ $preview->id }}">Preview generated on {{ $preview->created_at->format('M d, Y') }}</option>
+                                @endforeach
+                            </select>
+                            @if(count($aiPreviews) === 0)
+                                <p class="text-xs text-zinc-500 mt-1">You haven't generated any AI Try-On previews yet.</p>
+                            @endif
+                        </div>
+                    </div>
                 </div>
-                <flux:input wire:model="quantity" label="Quantity" type="number" min="1" />
-                <flux:textarea wire:model="special_instructions" label="Special Instructions" placeholder="Embroidery pattern, fit preference..." rows="3" />
-                <flux:button type="submit" variant="primary" class="w-full !bg-primary-500 hover:!bg-primary-600">Place Order</flux:button>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-zinc-200 dark:border-zinc-700">
+                    <flux:button wire:click="$set('showModal', false)" variant="ghost">Cancel</flux:button>
+                    <flux:button type="submit" variant="primary" class="!bg-primary-500 hover:!bg-primary-600" wire:loading.attr="disabled" wire:target="createOrder, reference_upload">
+                        <span wire:loading.remove wire:target="createOrder">Place Order</span>
+                        <span wire:loading wire:target="createOrder">Processing...</span>
+                    </flux:button>
+                </div>
             </form>
         </div>
     </div>

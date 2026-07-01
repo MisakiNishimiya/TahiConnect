@@ -11,8 +11,13 @@ class Appointment extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'staff_id', 'date', 'time', 'type', 'status', 'notes',
+        'user_id', 'staff_id', 'shop_id', 'date', 'time', 'type', 'status', 'notes',
     ];
+
+    public function shop(): BelongsTo
+    {
+        return $this->belongsTo(Shop::class);
+    }
 
     protected function casts(): array
     {

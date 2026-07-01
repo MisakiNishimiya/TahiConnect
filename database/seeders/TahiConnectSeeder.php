@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Models\Shop;
+use App\Models\ShopReview;
 use App\Models\Measurement;
 use App\Models\Appointment;
 use App\Models\GarmentType;
@@ -17,69 +19,128 @@ use App\Models\ActivityLog;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class TahiConnectSeeder extends Seeder
 {
     public function run(): void
     {
-        // ── Admins ──
+        // ── Platform Admins ──
         $admin1 = User::create([
             'name' => 'Maria Santos', 'first_name' => 'Maria', 'last_name' => 'Santos',
             'email' => 'admin@tahiconnect.com', 'password' => Hash::make('password'),
             'contact_number' => '+63 917 123 4567', 'role' => 'admin',
             'address' => '123 Rizal Ave, Makati City, Metro Manila',
         ]);
-        $admin2 = User::create([
-            'name' => 'Roberto Cruz', 'first_name' => 'Roberto', 'last_name' => 'Cruz',
-            'email' => 'admin2@tahiconnect.com', 'password' => Hash::make('password'),
-            'contact_number' => '+63 918 234 5678', 'role' => 'admin',
-            'address' => '456 Ayala Blvd, Quezon City, Metro Manila',
-        ]);
+
+        // ── Shop Owners ──
+        $ownerData = [
+            ['Rosa', 'Alcantara', 'rosa@tahiconnect.com'],
+            ['Jun', 'Mendoza', 'jun@tahiconnect.com'],
+            ['Lito', 'Garcia', 'lito@tahiconnect.com'],
+        ];
+        $owners = [];
+        foreach ($ownerData as $o) {
+            $owners[] = User::create([
+                'name' => "$o[0] $o[1]", 'first_name' => $o[0], 'last_name' => $o[1],
+                'email' => $o[2], 'password' => Hash::make('password'),
+                'contact_number' => '+63 918 ' . rand(100, 999) . ' ' . rand(1000, 9999),
+                'role' => 'shop_owner',
+            ]);
+        }
+
+        // ── Shops ──
+        $shopData = [
+            [
+                'name' => "Aling Rosa's Tailoring", 'owner_id' => $owners[0]->id,
+                'address' => '123 Bajada', 'barangay' => 'Bajada', 'city' => 'Davao City',
+                'specialties' => ['Barong Tagalog', 'Filipiniana', 'Gowns'],
+                'rating' => 4.8, 'total_reviews' => 124
+            ],
+            [
+                'name' => "Tahi ni Jun", 'owner_id' => $owners[1]->id,
+                'address' => '456 Matina', 'barangay' => 'Matina', 'city' => 'Davao City',
+                'specialties' => ['Men\'s Suits', 'Corporate Uniforms'],
+                'rating' => 4.5, 'total_reviews' => 89
+            ],
+            [
+                'name' => "Davao Suits & Gowns", 'owner_id' => $owners[2]->id,
+                'address' => '789 Toril', 'barangay' => 'Toril', 'city' => 'Davao City',
+                'specialties' => ['Wedding Gowns', 'Tuxedos', 'Prom Dresses'],
+                'rating' => 4.9, 'total_reviews' => 210
+            ],
+        ];
+        $shops = [];
+        foreach ($shopData as $s) {
+            $shops[] = Shop::create([
+                'owner_id' => $s['owner_id'],
+                'name' => $s['name'],
+                'slug' => Str::slug($s['name']),
+                'address' => $s['address'],
+                'barangay' => $s['barangay'],
+                'city' => $s['city'],
+                'specialties' => $s['specialties'],
+                'rating' => $s['rating'],
+                'total_reviews' => $s['total_reviews'],
+                'is_verified' => true,
+                'is_active' => true,
+                'operating_hours' => [
+                    'Monday' => '09:00-17:00', 'Tuesday' => '09:00-17:00',
+                    'Wednesday' => '09:00-17:00', 'Thursday' => '09:00-17:00',
+                    'Friday' => '09:00-17:00', 'Saturday' => '10:00-15:00', 'Sunday' => 'Closed'
+                ],
+            ]);
+        }
+
+        // Assign Shop Owners their shop_id
+        foreach ($owners as $idx => $owner) {
+            $owner->update(['shop_id' => $shops[$idx]->id]);
+        }
 
         // ── Staff ──
         $staff = [];
         $staffData = [
-            ['Elena', 'Reyes', 'elena@tahiconnect.com', '+63 919 345 6789'],
-            ['Carlos', 'Mendoza', 'carlos@tahiconnect.com', '+63 920 456 7890'],
-            ['Patricia', 'Garcia', 'patricia@tahiconnect.com', '+63 921 567 8901'],
-            ['Miguel', 'Torres', 'miguel@tahiconnect.com', '+63 922 678 9012'],
+            ['Elena', 'Reyes', 'elena@tahiconnect.com', 0],
+            ['Carlos', 'Mendoza', 'carlos@tahiconnect.com', 0],
+            ['Patricia', 'Garcia', 'patricia@tahiconnect.com', 1],
+            ['Miguel', 'Torres', 'miguel@tahiconnect.com', 2],
         ];
         foreach ($staffData as $s) {
             $staff[] = User::create([
                 'name' => "$s[0] $s[1]", 'first_name' => $s[0], 'last_name' => $s[1],
                 'email' => $s[2], 'password' => Hash::make('password'),
-                'contact_number' => $s[3], 'role' => 'tailor_staff',
-                'address' => 'TahiConnect Workshop, BGC, Taguig City',
+                'contact_number' => '+63 919 ' . rand(100, 999) . ' ' . rand(1000, 9999),
+                'role' => 'tailor_staff',
+                'shop_id' => $shops[$s[3]]->id,
             ]);
         }
 
         // ── Customers ──
         $customers = [];
         $customerData = [
-            ['Ana', 'Dela Cruz', 'ana@email.com', '+63 923 111 2233'],
-            ['Juan', 'Bautista', 'juan@email.com', '+63 924 222 3344'],
-            ['Sofia', 'Ramirez', 'sofia@email.com', '+63 925 333 4455'],
-            ['Marco', 'Villanueva', 'marco@email.com', '+63 926 444 5566'],
-            ['Isabella', 'Fernandez', 'isabella@email.com', '+63 927 555 6677'],
-            ['Gabriel', 'Aquino', 'gabriel@email.com', '+63 928 666 7788'],
-            ['Carmen', 'Lim', 'carmen@email.com', '+63 929 777 8899'],
-            ['Rafael', 'Navarro', 'rafael@email.com', '+63 930 888 9900'],
-            ['Lucia', 'Pangilinan', 'lucia@email.com', '+63 931 999 0011'],
-            ['Diego', 'Soriano', 'diego@email.com', '+63 932 000 1122'],
+            ['Ana', 'Dela Cruz', 'ana@email.com'],
+            ['Juan', 'Bautista', 'juan@email.com'],
+            ['Sofia', 'Ramirez', 'sofia@email.com'],
+            ['Marco', 'Villanueva', 'marco@email.com'],
+            ['Isabella', 'Fernandez', 'isabella@email.com'],
+            ['Gabriel', 'Aquino', 'gabriel@email.com'],
+            ['Carmen', 'Lim', 'carmen@email.com'],
+            ['Rafael', 'Navarro', 'rafael@email.com'],
+            ['Lucia', 'Pangilinan', 'lucia@email.com'],
+            ['Diego', 'Soriano', 'diego@email.com'],
         ];
         foreach ($customerData as $c) {
             $customers[] = User::create([
                 'name' => "$c[0] $c[1]", 'first_name' => $c[0], 'last_name' => $c[1],
                 'email' => $c[2], 'password' => Hash::make('password'),
-                'contact_number' => $c[3], 'role' => 'customer',
-                'address' => 'Metro Manila, Philippines',
+                'contact_number' => '+63 923 ' . rand(100, 999) . ' ' . rand(1000, 9999),
+                'role' => 'customer',
             ]);
         }
 
         // ── Garment Types ──
-        $garments = [];
         $garmentData = [
-            ['Barong Tagalog', 'Traditional Filipino formal wear made from lightweight fabric with intricate embroidery.', 3500],
+            ['Barong Tagalog', 'Traditional Filipino formal wear made from lightweight fabric.', 3500],
             ['Filipiniana Dress', 'Elegant butterfly-sleeved terno dress for formal occasions.', 5000],
             ['Terno', 'Modern interpretation of the classic Filipino terno with butterfly sleeves.', 6500],
             ["Baro't Saya", 'Traditional Filipino blouse and skirt ensemble.', 4000],
@@ -90,10 +151,17 @@ class TahiConnectSeeder extends Seeder
             ['Corporate Uniform', 'Professional corporate attire set.', 2500],
             ['Casual Wear', 'Custom casual clothing tailored to your style.', 1500],
         ];
-        foreach ($garmentData as $g) {
-            $garments[] = GarmentType::create([
-                'name' => $g[0], 'description' => $g[1], 'base_price' => $g[2],
-            ]);
+        
+        $allGarments = [];
+        foreach ($shops as $shop) {
+            // Give each shop a random subset of 6 garments
+            $shopGarments = collect($garmentData)->random(6);
+            foreach ($shopGarments as $g) {
+                $allGarments[] = GarmentType::create([
+                    'shop_id' => $shop->id,
+                    'name' => $g[0], 'description' => $g[1], 'base_price' => $g[2],
+                ]);
+            }
         }
 
         // ── Fabrics ──
@@ -106,13 +174,15 @@ class TahiConnectSeeder extends Seeder
             ['Linen', 'Natural linen', 'Beige', 380],
             ['Chiffon', 'Sheer chiffon', 'Blush Pink', 300],
             ['Satin', 'Smooth satin', 'Midnight Black', 420],
-            ['Polyester Blend', 'Poly-cotton', 'Charcoal Gray', 180],
-            ['Ramie', 'Natural ramie', 'Off-White', 550],
         ];
-        foreach ($fabricData as $f) {
-            Fabric::create([
-                'name' => $f[0], 'material' => $f[1], 'color' => $f[2], 'price_per_meter' => $f[3], 'in_stock' => true,
-            ]);
+        foreach ($shops as $shop) {
+            $shopFabrics = collect($fabricData)->random(5);
+            foreach ($shopFabrics as $f) {
+                Fabric::create([
+                    'shop_id' => $shop->id,
+                    'name' => $f[0], 'material' => $f[1], 'color' => $f[2], 'price_per_meter' => $f[3], 'in_stock' => true,
+                ]);
+            }
         }
 
         // ── Measurements ──
@@ -121,43 +191,41 @@ class TahiConnectSeeder extends Seeder
             [101.6, 86.4, 101.6, 46.0, 63.5, 81.3, 40.6, 175.3],
             [86.4, 68.6, 91.4, 38.1, 55.9, 76.2, 33.0, 162.6],
             [106.7, 91.4, 104.1, 48.3, 66.0, 83.8, 41.9, 180.3],
-            [83.8, 66.0, 88.9, 37.0, 54.6, 73.7, 32.0, 160.0],
-            [99.1, 83.8, 99.1, 45.7, 62.2, 80.0, 39.4, 172.7],
-            [81.3, 63.5, 86.4, 35.6, 53.3, 71.1, 31.0, 157.5],
-            [104.1, 88.9, 102.9, 47.6, 64.8, 82.6, 41.0, 177.8],
         ];
-        $statuses = ['validated', 'validated', 'pending', 'validated', 'validated', 'pending', 'validated', 'rejected'];
+        $statuses = ['validated', 'pending', 'validated', 'rejected'];
         for ($i = 0; $i < 8; $i++) {
             Measurement::create([
                 'user_id' => $customers[$i]->id,
-                'chest' => $measurementData[$i][0], 'waist' => $measurementData[$i][1],
-                'hip' => $measurementData[$i][2], 'shoulder' => $measurementData[$i][3],
-                'sleeve_length' => $measurementData[$i][4], 'inseam' => $measurementData[$i][5],
-                'neck' => $measurementData[$i][6], 'height' => $measurementData[$i][7],
-                'validation_status' => $statuses[$i],
+                'chest' => $measurementData[$i % 4][0], 'waist' => $measurementData[$i % 4][1],
+                'hip' => $measurementData[$i % 4][2], 'shoulder' => $measurementData[$i % 4][3],
+                'sleeve_length' => $measurementData[$i % 4][4], 'inseam' => $measurementData[$i % 4][5],
+                'neck' => $measurementData[$i % 4][6], 'height' => $measurementData[$i % 4][7],
+                'validation_status' => $statuses[$i % 4],
             ]);
         }
 
         // ── Orders ──
         $allStatuses = ['pending','measurements_verified','in_production','fitting_scheduled','final_adjustment','ready_for_pickup','completed','released'];
-        $fabricNames = ['Jusi','Piña Cloth','Silk','Organza','Cotton Twill','Linen','Chiffon','Satin'];
         $orders = [];
         for ($i = 0; $i < 20; $i++) {
             $customer = $customers[$i % count($customers)];
-            $garment = $garments[$i % count($garments)];
-            $staffMember = $staff[$i % count($staff)];
+            $shop = $shops[$i % count($shops)];
+            $shopStaff = User::where('shop_id', $shop->id)->where('role', 'tailor_staff')->get();
+            $staffMember = $shopStaff->count() > 0 ? $shopStaff->random() : null;
+            $shopGarments = GarmentType::where('shop_id', $shop->id)->get();
+            $garment = $shopGarments->count() > 0 ? $shopGarments->random() : $allGarments[0];
             $status = $allStatuses[$i % count($allStatuses)];
             $qty = rand(1, 3);
             $amount = $garment->base_price * $qty;
 
             $orders[] = Order::create([
+                'shop_id' => $shop->id,
                 'user_id' => $customer->id,
-                'staff_id' => $staffMember->id,
+                'staff_id' => $staffMember?->id,
                 'tracking_number' => 'TC-2025-' . str_pad($i + 1001, 4, '0', STR_PAD_LEFT),
                 'garment_type_id' => $garment->id,
-                'fabric_preference' => $fabricNames[$i % count($fabricNames)],
+                'fabric_preference' => 'Silk',
                 'quantity' => $qty,
-                'special_instructions' => $i % 3 === 0 ? 'Please use traditional embroidery pattern' : ($i % 3 === 1 ? 'Slim fit preferred' : null),
                 'status' => $status,
                 'estimated_completion' => Carbon::now()->addDays(rand(7, 45)),
                 'total_amount' => $amount,
@@ -171,18 +239,7 @@ class TahiConnectSeeder extends Seeder
                 OrderStatusHistory::create([
                     'order_id' => $order->id,
                     'status' => $allStatuses[$s],
-                    'changed_by' => $staff[0]->id,
-                    'notes' => match($allStatuses[$s]) {
-                        'pending' => 'Order received and queued for processing',
-                        'measurements_verified' => 'Customer measurements verified and approved',
-                        'in_production' => 'Garment is now in production',
-                        'fitting_scheduled' => 'Fitting appointment has been scheduled',
-                        'final_adjustment' => 'Making final adjustments after fitting',
-                        'ready_for_pickup' => 'Order is ready for customer pickup',
-                        'completed' => 'Order completed and picked up',
-                        'released' => 'Order released to customer',
-                        default => null,
-                    },
+                    'changed_by' => $order->staff_id,
                     'created_at' => Carbon::now()->subDays(($statusIdx - $s) * 3)->addHours(rand(8, 17)),
                 ]);
             }
@@ -190,23 +247,25 @@ class TahiConnectSeeder extends Seeder
 
         // ── Appointments ──
         $appointmentTypes = ['fitting', 'consultation', 'pickup'];
-        $appointmentStatuses = ['pending', 'confirmed', 'completed', 'cancelled'];
         for ($i = 0; $i < 15; $i++) {
             $isPast = $i < 5;
+            $shop = $shops[$i % count($shops)];
+            $shopStaff = User::where('shop_id', $shop->id)->where('role', 'tailor_staff')->get();
+            $staffMember = $shopStaff->count() > 0 ? $shopStaff->random() : null;
+            
             Appointment::create([
+                'shop_id' => $shop->id,
                 'user_id' => $customers[$i % count($customers)]->id,
-                'staff_id' => $staff[$i % count($staff)]->id,
+                'staff_id' => $staffMember?->id,
                 'date' => $isPast ? Carbon::now()->subDays(rand(1, 30)) : Carbon::now()->addDays(rand(1, 21)),
                 'time' => sprintf('%02d:00:00', rand(9, 16)),
                 'type' => $appointmentTypes[$i % 3],
                 'status' => $isPast ? ($i % 2 === 0 ? 'completed' : 'cancelled') : ($i % 2 === 0 ? 'pending' : 'confirmed'),
-                'notes' => $i % 2 === 0 ? 'Please prepare measurement tools' : null,
             ]);
         }
 
         // ── Payments ──
-        for ($i = 0; $i < 15; $i++) {
-            $order = $orders[$i];
+        foreach ($orders as $i => $order) {
             $isPaid = in_array($order->status, ['completed', 'released', 'ready_for_pickup']);
             Payment::create([
                 'order_id' => $order->id,
@@ -220,77 +279,44 @@ class TahiConnectSeeder extends Seeder
         }
 
         // ── Notifications ──
-        $notifData = [
-            ['order', 'Order Confirmed', 'Your order TC-2025-1001 for Barong Tagalog has been confirmed.'],
-            ['appointment', 'Appointment Reminder', 'You have a fitting appointment tomorrow at 10:00 AM.'],
-            ['payment', 'Payment Received', 'We received your payment of ₱3,500.00 for order TC-2025-1003.'],
-            ['system', 'Welcome to TahiConnect', 'Thank you for joining TahiConnect! Start by adding your measurements.'],
-            ['order', 'Order In Production', 'Your Filipiniana Dress is now being crafted by our expert tailors.'],
-            ['appointment', 'Appointment Confirmed', 'Your consultation on July 15 at 2:00 PM has been confirmed.'],
-            ['payment', 'Payment Reminder', 'You have an outstanding balance of ₱4,250.00 for order TC-2025-1005.'],
-            ['order', 'Ready for Pickup', 'Your Men\'s Suit is ready! Visit our shop to pick it up.'],
-            ['system', 'New Feature: Virtual Try-On', 'Try our new AI-powered virtual try-on feature to preview your garments!'],
-            ['order', 'Fitting Scheduled', 'Your fitting for the Formal Gown has been scheduled for July 20.'],
-            ['appointment', 'Appointment Cancelled', 'Your pickup appointment on July 10 has been cancelled.'],
-            ['payment', 'Refund Processed', 'A refund of ₱1,200.00 has been processed to your account.'],
-            ['order', 'Measurements Verified', 'Your measurements have been verified for order TC-2025-1008.'],
-            ['system', 'Profile Update', 'Please update your contact number in your profile settings.'],
-            ['order', 'Final Adjustment', 'Final adjustments are being made to your Terno.'],
-            ['appointment', 'New Time Slot', 'New appointment slots are available for next week.'],
-            ['payment', 'Payment Successful', 'Your GCash payment of ₱5,000.00 was successful.'],
-            ['order', 'Order Completed', 'Your Baro\'t Saya order has been completed. Thank you!'],
-            ['system', 'Maintenance Notice', 'System maintenance scheduled for July 25, 2:00-4:00 AM.'],
-            ['order', 'Design Approved', 'The design for your Corporate Uniform has been approved.'],
-        ];
-        foreach ($notifData as $idx => $n) {
+        for ($i = 0; $i < 20; $i++) {
             CustomNotification::create([
-                'user_id' => $customers[$idx % count($customers)]->id,
-                'type' => $n[0], 'title' => $n[1], 'message' => $n[2],
-                'is_read' => $idx > 10,
+                'user_id' => $customers[$i % count($customers)]->id,
+                'type' => 'system', 'title' => 'System Update', 'message' => 'Welcome to TahiConnect.',
+                'is_read' => $i > 10,
                 'created_at' => Carbon::now()->subHours(rand(1, 200)),
             ]);
         }
 
         // ── Available Time Slots ──
-        for ($day = 0; $day < 14; $day++) {
-            $date = Carbon::now()->addDays($day);
-            if ($date->isWeekend()) continue;
-            $slots = [['09:00','10:00'],['10:00','11:00'],['11:00','12:00'],['13:00','14:00'],['14:00','15:00'],['15:00','16:00']];
-            foreach ($slots as $slot) {
-                AvailableTimeSlot::create([
-                    'date' => $date->toDateString(),
-                    'start_time' => $slot[0], 'end_time' => $slot[1],
-                    'is_available' => rand(0, 4) > 0,
-                    'max_bookings' => 3,
-                    'current_bookings' => rand(0, 2),
-                ]);
+        foreach ($shops as $shop) {
+            for ($day = 0; $day < 7; $day++) {
+                $date = Carbon::now()->addDays($day);
+                if ($date->isWeekend()) continue;
+                $slots = [['09:00','10:00'],['10:00','11:00'],['11:00','12:00']];
+                foreach ($slots as $slot) {
+                    AvailableTimeSlot::create([
+                        'shop_id' => $shop->id,
+                        'date' => $date->toDateString(),
+                        'start_time' => $slot[0], 'end_time' => $slot[1],
+                        'is_available' => true,
+                        'max_bookings' => 3,
+                        'current_bookings' => 0,
+                    ]);
+                }
             }
         }
 
-        // ── Activity Logs ──
-        $activities = [
-            ['Order Placed', 'Placed a new order for Barong Tagalog'],
-            ['Measurement Updated', 'Updated body measurements'],
-            ['Appointment Booked', 'Booked a fitting appointment for July 18'],
-            ['Payment Made', 'Made a payment of ₱3,500.00 via GCash'],
-            ['Order Placed', 'Placed a new order for Filipiniana Dress'],
-            ['Profile Updated', 'Updated contact number'],
-            ['Virtual Try-On', 'Generated a virtual try-on preview'],
-            ['Appointment Cancelled', 'Cancelled consultation appointment'],
-            ['Payment Made', 'Made a cash payment of ₱5,000.00'],
-            ['Order Placed', 'Placed a new order for Men\'s Suit'],
-            ['Measurement Updated', 'Added new measurements for formal gown'],
-            ['Appointment Booked', 'Booked a pickup appointment'],
-            ['Design Uploaded', 'Uploaded design reference for Terno'],
-            ['Order Placed', 'Placed a new order for School Uniform'],
-            ['Payment Made', 'Made a bank transfer of ₱8,500.00'],
-        ];
-        foreach ($activities as $idx => $a) {
-            ActivityLog::create([
-                'user_id' => $customers[$idx % count($customers)]->id,
-                'action' => $a[0], 'description' => $a[1],
-                'created_at' => Carbon::now()->subHours(rand(1, 150)),
-            ]);
+        // ── Shop Reviews ──
+        foreach ($shops as $shop) {
+            for ($i = 0; $i < 5; $i++) {
+                ShopReview::create([
+                    'shop_id' => $shop->id,
+                    'user_id' => $customers[rand(0, 9)]->id,
+                    'rating' => rand(4, 5),
+                    'comment' => 'Great service and quality!',
+                ]);
+            }
         }
     }
 }

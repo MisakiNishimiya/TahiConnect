@@ -14,6 +14,7 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group heading="Administration" class="grid">
                     <flux:navlist.item icon="chart-bar-square" :href="route('admin.dashboard')" :current="request()->routeIs('admin.dashboard')" wire:navigate>Dashboard</flux:navlist.item>
+                    <flux:navlist.item icon="building-storefront" :href="route('admin.shops')" :current="request()->routeIs('admin.shops')" wire:navigate>Platform Shops</flux:navlist.item>
                     <flux:navlist.item icon="users" :href="route('admin.users')" :current="request()->routeIs('admin.users')" wire:navigate>User Management</flux:navlist.item>
                     <flux:navlist.item icon="calendar" :href="route('admin.appointments')" :current="request()->routeIs('admin.appointments')" wire:navigate>Appointments</flux:navlist.item>
                     <flux:navlist.item icon="clipboard-document-list" :href="route('admin.orders')" :current="request()->routeIs('admin.orders')" wire:navigate>Order Management</flux:navlist.item>

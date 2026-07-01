@@ -12,7 +12,7 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id', 'staff_id', 'tracking_number', 'garment_type_id',
+        'user_id', 'staff_id', 'shop_id', 'tracking_number', 'garment_type_id',
         'fabric_preference', 'quantity', 'special_instructions',
         'design_reference_path', 'status', 'estimated_completion', 'total_amount',
     ];
@@ -37,6 +37,11 @@ class Order extends Model
     public function garmentType(): BelongsTo
     {
         return $this->belongsTo(GarmentType::class);
+    }
+
+    public function shop(): BelongsTo
+    {
+        return $this->belongsTo(Shop::class);
     }
 
     public function statusHistory(): HasMany

@@ -17,7 +17,8 @@ return new class extends Migration
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
             $table->string('contact_number')->nullable();
-            $table->enum('role', ['customer', 'tailor_staff', 'admin'])->default('customer');
+            $table->enum('role', ['customer', 'tailor_staff', 'admin', 'shop_owner'])->default('customer');
+            $table->foreignId('shop_id')->nullable()->constrained('shops')->nullOnDelete();
             $table->string('avatar')->nullable();
             $table->text('address')->nullable();
             $table->string('email')->unique();

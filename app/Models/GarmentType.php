@@ -10,7 +10,12 @@ class GarmentType extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'description', 'base_price', 'image_url'];
+    protected $fillable = ['shop_id', 'name', 'description', 'base_price', 'image_url'];
+
+    public function shop(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Shop::class);
+    }
 
     public function orders(): HasMany
     {

@@ -14,6 +14,7 @@
             <flux:navlist variant="outline">
                 <flux:navlist.group heading="Menu" class="grid">
                     <flux:navlist.item icon="home" :href="route('customer.dashboard')" :current="request()->routeIs('customer.dashboard')" wire:navigate>Dashboard</flux:navlist.item>
+                    <flux:navlist.item icon="building-storefront" :href="route('customer.shops')" :current="request()->routeIs('customer.shops')" wire:navigate>Find a Tailor</flux:navlist.item>
                     <flux:navlist.item icon="chart-bar" :href="route('customer.measurements')" :current="request()->routeIs('customer.measurements')" wire:navigate>My Measurements</flux:navlist.item>
                     <flux:navlist.item icon="sparkles" :href="route('customer.virtual-tryon')" :current="request()->routeIs('customer.virtual-tryon')" wire:navigate>Virtual Try-On</flux:navlist.item>
                     <flux:navlist.item icon="calendar" :href="route('customer.appointments')" :current="request()->routeIs('customer.appointments')" wire:navigate>Appointments</flux:navlist.item>

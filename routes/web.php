@@ -14,6 +14,8 @@ Route::get('/dashboard', function () {
         return redirect()->route('admin.dashboard');
     } elseif ($user->role === 'tailor_staff') {
         return redirect()->route('staff.dashboard');
+    } elseif ($user->role === 'shop_owner') {
+        return redirect()->route('shopowner.dashboard');
     }
     return redirect()->route('customer.dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -21,6 +23,7 @@ Route::get('/dashboard', function () {
 // Customer Routes
 Route::middleware(['auth'])->prefix('customer')->group(function () {
     Volt::route('/dashboard', 'customer.dashboard')->name('customer.dashboard');
+    Volt::route('/shops', 'customer.shops')->name('customer.shops');
     Volt::route('/measurements', 'customer.measurements')->name('customer.measurements');
     Volt::route('/appointments', 'customer.appointments')->name('customer.appointments');
     Volt::route('/orders', 'customer.orders')->name('customer.orders');
@@ -33,11 +36,21 @@ Route::middleware(['auth'])->prefix('customer')->group(function () {
 // Admin Routes
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Volt::route('/dashboard', 'admin.dashboard')->name('admin.dashboard');
+    Volt::route('/shops', 'admin.shops')->name('admin.shops');
     Volt::route('/users', 'admin.users')->name('admin.users');
     Volt::route('/appointments', 'admin.appointments')->name('admin.appointments');
     Volt::route('/orders', 'admin.orders')->name('admin.orders');
     Volt::route('/payments', 'admin.payments')->name('admin.payments');
     Volt::route('/reports', 'admin.reports')->name('admin.reports');
+});
+
+// Shop Owner Routes
+Route::middleware(['auth'])->prefix('shopowner')->group(function () {
+    Volt::route('/dashboard', 'shopowner.dashboard')->name('shopowner.dashboard');
+    Volt::route('/orders', 'shopowner.orders')->name('shopowner.orders');
+    Volt::route('/staff', 'shopowner.staff')->name('shopowner.staff');
+    Volt::route('/garments', 'shopowner.garments')->name('shopowner.garments');
+    Volt::route('/settings', 'shopowner.settings')->name('shopowner.settings');
 });
 
 // Staff Routes

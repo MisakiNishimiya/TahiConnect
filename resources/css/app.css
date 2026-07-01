@@ -1,0 +1,192 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source "../views";
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-heading: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+
+    --color-primary-50: #eef5f3;
+    --color-primary-100: #d5e8e3;
+    --color-primary-200: #aed1c8;
+    --color-primary-300: #7fb5a8;
+    --color-primary-400: #4f9383;
+    --color-primary-500: #2F5D50;
+    --color-primary-600: #264d42;
+    --color-primary-700: #1E3D34;
+    --color-primary-800: #162e27;
+    --color-primary-900: #0e1f1a;
+    --color-primary-950: #070f0d;
+
+    --color-secondary-50: #faf6f0;
+    --color-secondary-100: #f2e8d8;
+    --color-secondary-200: #e8d5b8;
+    --color-secondary-300: #D6B98C;
+    --color-secondary-400: #c9a46c;
+    --color-secondary-500: #B8975F;
+    --color-secondary-600: #9a7d4a;
+    --color-secondary-700: #7a6339;
+    --color-secondary-800: #5c4a2b;
+    --color-secondary-900: #3d311c;
+
+    --color-cream-50: #FDFCFA;
+    --color-cream-100: #FAF7F2;
+    --color-cream-200: #F5F1EA;
+    --color-cream-300: #EDE6D9;
+    --color-cream-400: #E0D5C2;
+    --color-cream-500: #D3C4AB;
+
+    --color-zinc-50: #fafaf8;
+    --color-zinc-100: #f5f5f0;
+    --color-zinc-200: #e5e5df;
+    --color-zinc-300: #d4d4cd;
+    --color-zinc-400: #a3a39c;
+    --color-zinc-500: #73736d;
+    --color-zinc-600: #52524d;
+    --color-zinc-700: #40403b;
+    --color-zinc-800: #262622;
+    --color-zinc-900: #171714;
+    --color-zinc-950: #0a0a08;
+
+    --color-accent: var(--color-primary-500);
+    --color-accent-content: var(--color-primary-500);
+    --color-accent-foreground: var(--color-white);
+}
+
+@layer theme {
+    .dark {
+        --color-accent: var(--color-primary-400);
+        --color-accent-content: var(--color-primary-400);
+        --color-accent-foreground: var(--color-primary-950);
+    }
+}
+
+@layer base {
+    *, ::after, ::before, ::backdrop, ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+    body {
+        font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+        color: #2D2D2D;
+    }
+    h1, h2, h3, h4, h5, h6 {
+        font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+    }
+}
+
+[data-flux-field] { @apply grid gap-2; }
+[data-flux-label] { @apply !mb-0 !leading-tight; }
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* ── TahiConnect Cards ── */
+.tc-card {
+    @apply bg-white rounded-2xl shadow-sm border border-zinc-100 p-6 transition-all duration-200;
+}
+.tc-card:hover { @apply shadow-md; }
+.dark .tc-card { @apply bg-zinc-800 border-zinc-700; }
+
+.tc-stat-card { @apply bg-white rounded-2xl shadow-sm border border-zinc-100 p-5 flex items-center gap-4 transition-all duration-200; }
+.tc-stat-card:hover { @apply shadow-md -translate-y-0.5; }
+.dark .tc-stat-card { @apply bg-zinc-800 border-zinc-700; }
+
+.tc-stat-icon { @apply flex items-center justify-center w-12 h-12 rounded-xl shrink-0; }
+
+/* ── Badges ── */
+.tc-badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+.tc-badge-pending { @apply bg-amber-50 text-amber-700 border border-amber-200; }
+.tc-badge-confirmed { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+.tc-badge-completed { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+.tc-badge-cancelled { @apply bg-red-50 text-red-700 border border-red-200; }
+.tc-badge-in-production { @apply bg-purple-50 text-purple-700 border border-purple-200; }
+.tc-badge-validated { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+.tc-badge-rejected { @apply bg-red-50 text-red-700 border border-red-200; }
+.tc-badge-paid { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+.tc-badge-released { @apply bg-teal-50 text-teal-700 border border-teal-200; }
+.tc-badge-measurements_verified { @apply bg-cyan-50 text-cyan-700 border border-cyan-200; }
+.tc-badge-fitting_scheduled { @apply bg-indigo-50 text-indigo-700 border border-indigo-200; }
+.tc-badge-final_adjustment { @apply bg-orange-50 text-orange-700 border border-orange-200; }
+.tc-badge-ready_for_pickup { @apply bg-lime-50 text-lime-700 border border-lime-200; }
+.tc-badge-processing { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+.tc-badge-failed { @apply bg-red-50 text-red-700 border border-red-200; }
+.tc-badge-refunded { @apply bg-gray-50 text-gray-700 border border-gray-200; }
+.tc-badge-admin { @apply bg-red-50 text-red-700 border border-red-200; }
+.tc-badge-tailor_staff { @apply bg-blue-50 text-blue-700 border border-blue-200; }
+.tc-badge-customer { @apply bg-emerald-50 text-emerald-700 border border-emerald-200; }
+
+.dark .tc-badge-pending { @apply bg-amber-900/30 text-amber-300 border-amber-700; }
+.dark .tc-badge-confirmed { @apply bg-blue-900/30 text-blue-300 border-blue-700; }
+.dark .tc-badge-completed { @apply bg-emerald-900/30 text-emerald-300 border-emerald-700; }
+.dark .tc-badge-cancelled { @apply bg-red-900/30 text-red-300 border-red-700; }
+.dark .tc-badge-in-production { @apply bg-purple-900/30 text-purple-300 border-purple-700; }
+.dark .tc-badge-paid { @apply bg-emerald-900/30 text-emerald-300 border-emerald-700; }
+
+/* ── Progress ── */
+.tc-progress-step-dot {
+    @apply w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300;
+}
+.tc-progress-step-dot-active { @apply bg-primary-500 text-white ring-4 ring-primary-100; }
+.tc-progress-step-dot-completed { @apply bg-emerald-500 text-white; }
+.tc-progress-step-dot-pending { @apply bg-zinc-200 text-zinc-400; }
+.tc-progress-line { @apply h-1 flex-1 rounded-full min-w-4; }
+.tc-progress-line-completed { @apply bg-emerald-500; }
+.tc-progress-line-pending { @apply bg-zinc-200; }
+
+/* ── Timeline ── */
+.tc-timeline { @apply relative pl-8; }
+.tc-timeline::before {
+    content: '';
+    @apply absolute left-3 top-2 bottom-2 w-0.5 bg-zinc-200;
+}
+.dark .tc-timeline::before { @apply bg-zinc-700; }
+.tc-timeline-item { @apply relative pb-6 last:pb-0; }
+.tc-timeline-dot {
+    @apply absolute -left-5 top-1 w-3 h-3 rounded-full border-2 border-white;
+}
+.dark .tc-timeline-dot { @apply border-zinc-800; }
+
+/* ── Animations ── */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.5s ease-out forwards; }
+.animation-delay-100 { animation-delay: 0.1s; opacity: 0; }
+.animation-delay-200 { animation-delay: 0.2s; opacity: 0; }
+.animation-delay-300 { animation-delay: 0.3s; opacity: 0; }
+.animation-delay-400 { animation-delay: 0.4s; opacity: 0; }
+
+@keyframes growUp {
+    from { transform: scaleY(0); }
+    to { transform: scaleY(1); }
+}
+.animate-grow-up {
+    animation: growUp 0.8s ease-out forwards;
+    transform-origin: bottom;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+.animate-pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }

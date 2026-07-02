@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('staff_id')->nullable()->constrained('users')->onDelete('set null');
             $table->date('date');
             $table->time('time');
-            $table->enum('type', ['fitting', 'consultation', 'pickup'])->default('consultation');
+            $table->string('type')->default('initial_measurement');
             $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending');
             $table->text('notes')->nullable();
             $table->timestamps();

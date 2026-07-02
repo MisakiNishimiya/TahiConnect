@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\BelongsToShop;
 
 class Appointment extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToShop;
 
     protected $fillable = [
         'user_id', 'staff_id', 'shop_id', 'date', 'time', 'type', 'status', 'notes',
@@ -34,5 +35,19 @@ class Appointment extends Model
     public function staff(): BelongsTo
     {
         return $this->belongsTo(User::class, 'staff_id');
+    }
+
+    public function getTypeLabelAttribute(): string
+    {
+        $typeLabels = [
+            'initial_measurement' => 'Initial Measurement & Consultation',
+            'fabric_selection' => 'Fabric Selection & Touch-and-Feel',
+            'baste_fitting' => 'Baste Fitting',
+            'final_pickup' => 'Final Adjustments & Pickup',
+            'consultation' => 'Initial Consultation',
+            'fitting' => 'Fitting',
+            'pickup' => 'Pickup'
+        ];
+        return $typeLabels[$this->type] ?? ucfirst(str_replace('_', ' ', $this->type));
     }
 }

@@ -74,40 +74,54 @@ new class extends Component {
 
     <x-settings.layout heading="Profile" subheading="Update your name and email address">
         <form wire:submit="updateProfileInformation" class="my-6 w-full space-y-6">
-            <flux:input wire:model="name" label="{{ __('Name') }}" type="text" name="name" required autofocus autocomplete="name" />
+            <!-- Avatar Preview -->
+            <div class="flex items-center gap-5 p-5 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 rounded-2xl border border-primary-100 dark:border-primary-800">
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
+                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                </div>
+                <div>
+                    <p class="font-semibold text-zinc-900 dark:text-white">{{ auth()->user()->name }}</p>
+                    <p class="text-sm text-zinc-500">{{ auth()->user()->email }}</p>
+                    <span class="tc-badge tc-badge-{{ auth()->user()->role }} mt-1">{{ ucwords(str_replace('_', ' ', auth()->user()->role)) }}</span>
+                </div>
+            </div>
 
-            <div>
-                <flux:input wire:model="email" label="{{ __('Email') }}" type="email" name="email" required autocomplete="email" />
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-zinc-700 dark:text-zinc-300">Full Name</label>
+                <input wire:model="name" type="text" name="name" required autofocus autocomplete="name"
+                    class="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200" />
+                @error('name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+            </div>
 
-                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail &&! auth()->user()->hasVerifiedEmail())
-                    <div>
-                        <p class="mt-2 text-sm text-gray-800">
-                            {{ __('Your email address is unverified.') }}
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-zinc-700 dark:text-zinc-300">Email Address</label>
+                <input wire:model="email" type="email" name="email" required autocomplete="email"
+                    class="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200" />
+                @error('email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
 
-                            <button
-                                wire:click.prevent="resendVerificationNotification"
-                                class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                {{ __('Click here to re-send the verification email.') }}
-                            </button>
+                @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && !auth()->user()->hasVerifiedEmail())
+                    <div class="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 mt-2">
+                        <p class="text-sm text-amber-800 dark:text-amber-200">
+                            Your email is unverified.
+                            <button wire:click.prevent="resendVerificationNotification" class="font-semibold underline hover:text-amber-900 dark:hover:text-amber-100">Resend verification email.</button>
                         </p>
-
                         @if (session('status') === 'verification-link-sent')
-                            <p class="mt-2 text-sm font-medium text-green-600">
-                                {{ __('A new verification link has been sent to your email address.') }}
-                            </p>
+                            <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400 mt-1">Verification link sent!</p>
                         @endif
                     </div>
                 @endif
             </div>
 
-            <div class="flex items-center gap-4">
-                <div class="flex items-center justify-end">
-                    <flux:button variant="primary" type="submit" class="w-full">{{ __('Save') }}</flux:button>
-                </div>
-
-                <x-action-message class="me-3" on="profile-updated">
-                    {{ __('Saved.') }}
+            <div class="flex items-center gap-4 pt-2">
+                <button type="submit"
+                    class="px-6 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl click-feedback">
+                    Save changes
+                </button>
+                <x-action-message on="profile-updated">
+                    <span class="text-sm text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        Saved!
+                    </span>
                 </x-action-message>
             </div>
         </form>

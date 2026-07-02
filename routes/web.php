@@ -36,7 +36,7 @@ Route::middleware(['auth'])->prefix('customer')->group(function () {
 });
 
 // Admin Routes
-Route::middleware(['auth'])->prefix('admin')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Volt::route('/dashboard', 'admin.dashboard')->name('admin.dashboard');
     Volt::route('/shops', 'admin.shops')->name('admin.shops');
     Volt::route('/users', 'admin.users')->name('admin.users');
@@ -47,7 +47,7 @@ Route::middleware(['auth'])->prefix('admin')->group(function () {
 });
 
 // Shop Owner Routes
-Route::middleware(['auth'])->prefix('shopowner')->group(function () {
+Route::middleware(['auth', 'role:shop_owner', 'shop.ownership'])->prefix('shopowner')->group(function () {
     Volt::route('/dashboard', 'shopowner.dashboard')->name('shopowner.dashboard');
     Volt::route('/orders', 'shopowner.orders')->name('shopowner.orders');
     Volt::route('/staff', 'shopowner.staff')->name('shopowner.staff');
@@ -56,7 +56,7 @@ Route::middleware(['auth'])->prefix('shopowner')->group(function () {
 });
 
 // Staff Routes
-Route::middleware(['auth'])->prefix('staff')->group(function () {
+Route::middleware(['auth', 'role:tailor_staff', 'shop.ownership'])->prefix('staff')->group(function () {
     Volt::route('/dashboard', 'staff.dashboard')->name('staff.dashboard');
     Volt::route('/orders', 'staff.orders')->name('staff.orders');
     Volt::route('/appointments', 'staff.appointments')->name('staff.appointments');

@@ -16,6 +16,7 @@ use App\Models\VirtualTryon;
 use App\Models\AvailableTimeSlot;
 use App\Models\Fabric;
 use App\Models\ActivityLog;
+use App\Models\PreMadeProduct;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -185,6 +186,28 @@ class TahiConnectSeeder extends Seeder
             }
         }
 
+        // ── Pre-made Products ──
+        $productData = [
+            ['Standard White Barong (RTW)', 'Classic semi-formal white barong, ready to wear.', 2500, ['XS', 'S', 'M', 'L', 'XL']],
+            ['Pre-made Formal Slacks', 'Straight-cut dark slacks, perfect for corporate or formal use.', 1200, ['28', '30', '32', '34', '36']],
+            ['Casual Linen Shirt', 'Relaxed-fit linen shirt ideal for tropical weather.', 950, ['S', 'M', 'L', 'XL']],
+            ['Filipiniana Shawl / Alampay', 'Traditional shawl to complement casual or formal Filipiniana dresses.', 1800, ['Free Size']],
+        ];
+
+        $allProducts = [];
+        foreach ($shops as $shop) {
+            foreach ($productData as $p) {
+                $allProducts[] = PreMadeProduct::create([
+                    'shop_id' => $shop->id,
+                    'name' => $p[0],
+                    'description' => $p[1],
+                    'price' => $p[2],
+                    'available_sizes' => $p[3],
+                    'is_active' => true,
+                ]);
+            }
+        }
+
         // ── Measurements ──
         $measurementData = [
             [96.5, 81.3, 96.5, 44.5, 61.0, 78.7, 38.1, 170.2],
@@ -206,47 +229,89 @@ class TahiConnectSeeder extends Seeder
 
         // ── Orders ──
         $allStatuses = ['pending','measurements_verified','in_production','fitting_scheduled','final_adjustment','ready_for_pickup','completed','released'];
+        $preMadeStatuses = ['pending', 'in_production', 'ready_for_pickup', 'completed', 'released'];
         $orders = [];
         for ($i = 0; $i < 20; $i++) {
             $customer = $customers[$i % count($customers)];
             $shop = $shops[$i % count($shops)];
             $shopStaff = User::where('shop_id', $shop->id)->where('role', 'tailor_staff')->get();
             $staffMember = $shopStaff->count() > 0 ? $shopStaff->random() : null;
-            $shopGarments = GarmentType::where('shop_id', $shop->id)->get();
-            $garment = $shopGarments->count() > 0 ? $shopGarments->random() : $allGarments[0];
-            $status = $allStatuses[$i % count($allStatuses)];
+            
+            $isPreMade = ($i % 4 === 0);
             $qty = rand(1, 3);
-            $amount = $garment->base_price * $qty;
+            
+            if ($isPreMade) {
+                // Find products for this shop
+                $shopProducts = PreMadeProduct::where('shop_id', $shop->id)->get();
+                $product = $shopProducts->count() > 0 ? $shopProducts->random() : $allProducts[0];
+                $status = $preMadeStatuses[$i % count($preMadeStatuses)];
+                $size = collect($product->available_sizes)->random();
+                $amount = $product->price * $qty;
 
-            $orders[] = Order::create([
-                'shop_id' => $shop->id,
-                'user_id' => $customer->id,
-                'staff_id' => $staffMember?->id,
-                'tracking_number' => 'TC-2025-' . str_pad($i + 1001, 4, '0', STR_PAD_LEFT),
-                'garment_type_id' => $garment->id,
-                'fabric_preference' => 'Silk',
-                'quantity' => $qty,
-                'status' => $status,
-                'estimated_completion' => Carbon::now()->addDays(rand(7, 45)),
-                'total_amount' => $amount,
-            ]);
-        }
+                $orders[] = Order::create([
+                    'shop_id' => $shop->id,
+                    'user_id' => $customer->id,
+                    'staff_id' => $staffMember?->id,
+                    'tracking_number' => 'TC-2025-' . str_pad($i + 1001, 4, '0', STR_PAD_LEFT),
+                    'order_type' => 'pre_made',
+                    'pre_made_product_id' => $product->id,
+                    'product_size' => $size,
+                    'garment_type_id' => null,
+                    'fabric_preference' => null,
+                    'quantity' => $qty,
+                    'status' => $status,
+                    'estimated_completion' => Carbon::now()->addDays(rand(2, 7)),
+                    'total_amount' => $amount,
+                ]);
+            } else {
+                $shopGarments = GarmentType::where('shop_id', $shop->id)->get();
+                $garment = $shopGarments->count() > 0 ? $shopGarments->random() : $allGarments[0];
+                $status = $allStatuses[$i % count($allStatuses)];
+                $amount = $garment->base_price * $qty;
 
-        // ── Order Status History ──
-        foreach ($orders as $order) {
-            $statusIdx = array_search($order->status, $allStatuses);
-            for ($s = 0; $s <= $statusIdx; $s++) {
-                OrderStatusHistory::create([
-                    'order_id' => $order->id,
-                    'status' => $allStatuses[$s],
-                    'changed_by' => $order->staff_id,
-                    'created_at' => Carbon::now()->subDays(($statusIdx - $s) * 3)->addHours(rand(8, 17)),
+                $orders[] = Order::create([
+                    'shop_id' => $shop->id,
+                    'user_id' => $customer->id,
+                    'staff_id' => $staffMember?->id,
+                    'tracking_number' => 'TC-2025-' . str_pad($i + 1001, 4, '0', STR_PAD_LEFT),
+                    'order_type' => 'custom',
+                    'garment_type_id' => $garment->id,
+                    'fabric_preference' => 'Silk',
+                    'quantity' => $qty,
+                    'status' => $status,
+                    'estimated_completion' => Carbon::now()->addDays(rand(7, 45)),
+                    'total_amount' => $amount,
                 ]);
             }
         }
 
+        // ── Order Status History ──
+        foreach ($orders as $order) {
+            if ($order->order_type === 'pre_made') {
+                $statusIdx = array_search($order->status, $preMadeStatuses);
+                for ($s = 0; $s <= $statusIdx; $s++) {
+                    OrderStatusHistory::create([
+                        'order_id' => $order->id,
+                        'status' => $preMadeStatuses[$s],
+                        'changed_by' => $order->staff_id,
+                        'created_at' => Carbon::now()->subDays(($statusIdx - $s) * 1)->addHours(rand(1, 4)),
+                    ]);
+                }
+            } else {
+                $statusIdx = array_search($order->status, $allStatuses);
+                for ($s = 0; $s <= $statusIdx; $s++) {
+                    OrderStatusHistory::create([
+                        'order_id' => $order->id,
+                        'status' => $allStatuses[$s],
+                        'changed_by' => $order->staff_id,
+                        'created_at' => Carbon::now()->subDays(($statusIdx - $s) * 3)->addHours(rand(8, 17)),
+                    ]);
+                }
+            }
+        }
+
         // ── Appointments ──
-        $appointmentTypes = ['fitting', 'consultation', 'pickup'];
+        $appointmentTypes = ['initial_measurement', 'fabric_selection', 'baste_fitting', 'final_pickup'];
         for ($i = 0; $i < 15; $i++) {
             $isPast = $i < 5;
             $shop = $shops[$i % count($shops)];
@@ -259,7 +324,7 @@ class TahiConnectSeeder extends Seeder
                 'staff_id' => $staffMember?->id,
                 'date' => $isPast ? Carbon::now()->subDays(rand(1, 30)) : Carbon::now()->addDays(rand(1, 21)),
                 'time' => sprintf('%02d:00:00', rand(9, 16)),
-                'type' => $appointmentTypes[$i % 3],
+                'type' => $appointmentTypes[$i % 4],
                 'status' => $isPast ? ($i % 2 === 0 ? 'completed' : 'cancelled') : ($i % 2 === 0 ? 'pending' : 'confirmed'),
             ]);
         }

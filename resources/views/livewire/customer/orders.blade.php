@@ -4,6 +4,7 @@ use App\Models\Order;
 use App\Models\GarmentType;
 use App\Models\Fabric;
 use App\Models\VirtualTryon;
+use App\Models\Shop;
 use Livewire\Attributes\Layout;
 use Livewire\Volt\Component;
 use Livewire\WithFileUploads;
@@ -15,6 +16,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     
     // Form State
     public int $currentStep = 1;
+    public string $shop_id = '';
     public string $garment_type_id = '';
     public string $fabric_preference = '';
     public int $quantity = 1;
@@ -27,12 +29,43 @@ new #[Layout('components.layouts.app')] class extends Component {
     
     public bool $showModal = false;
 
+    public function updatedShopId($value)
+    {
+        $this->garment_type_id = '';
+        $this->fabric_preference = '';
+    }
+
     public function nextStep()
     {
         if ($this->currentStep === 1) {
             $this->validate([
-                'garment_type_id' => 'required|exists:garment_types,id',
-                'fabric_preference' => 'nullable|string',
+                'shop_id' => 'required|exists:shops,id',
+                'garment_type_id' => [
+                    'required',
+                    'exists:garment_types,id',
+                    function ($attribute, $value, $fail) {
+                        if ($value && $this->shop_id) {
+                            $garmentType = GarmentType::find($value);
+                            if (!$garmentType || $garmentType->shop_id != $this->shop_id) {
+                                $fail('The selected garment type does not belong to the chosen shop.');
+                            }
+                        }
+                    }
+                ],
+                'fabric_preference' => [
+                    'nullable',
+                    'string',
+                    function ($attribute, $value, $fail) {
+                        if ($value && $this->shop_id) {
+                            $fabricExists = Fabric::where('shop_id', $this->shop_id)
+                                                 ->where('name', $value)
+                                                 ->exists();
+                            if (!$fabricExists) {
+                                $fail('The selected fabric is not available at the chosen shop.');
+                            }
+                        }
+                    }
+                ],
                 'quantity' => 'required|integer|min:1',
                 'preferred_completion_date' => 'nullable|date|after:today',
             ]);
@@ -59,9 +92,21 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function createOrder(): void
     {
-        // Final validation
+        // Final validation with shop scoping
         $this->validate([
-            'garment_type_id' => 'required|exists:garment_types,id',
+            'shop_id' => 'required|exists:shops,id',
+            'garment_type_id' => [
+                'required',
+                'exists:garment_types,id',
+                function ($attribute, $value, $fail) {
+                    if ($value && $this->shop_id) {
+                        $garmentType = GarmentType::find($value);
+                        if (!$garmentType || $garmentType->shop_id != $this->shop_id) {
+                            $fail('The selected garment type does not belong to the chosen shop.');
+                        }
+                    }
+                }
+            ],
             'quantity' => 'required|integer|min:1',
         ]);
 
@@ -79,23 +124,23 @@ new #[Layout('components.layouts.app')] class extends Component {
             }
         }
 
-        $garment = GarmentType::find($this->garment_type_id);
         Order::create([
             'user_id' => auth()->id(),
-            'shop_id' => $garment->shop_id ?? null,
+            'shop_id' => $this->shop_id,
             'tracking_number' => 'TC-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
+            'order_type' => 'custom',
             'garment_type_id' => $this->garment_type_id,
             'fabric_preference' => $this->fabric_preference,
             'quantity' => $this->quantity,
             'special_instructions' => $this->special_instructions,
             'design_reference_path' => $designPath,
-            'total_amount' => $garment->base_price * $this->quantity,
+            'total_amount' => GarmentType::find($this->garment_type_id)->base_price * $this->quantity,
             'status' => 'pending',
             'estimated_completion' => $this->preferred_completion_date ?: now()->addDays(21)->format('Y-m-d'),
         ]);
 
         $this->reset([
-            'currentStep', 'garment_type_id', 'fabric_preference', 'quantity', 
+            'currentStep', 'shop_id', 'garment_type_id', 'fabric_preference', 'quantity', 
             'preferred_completion_date', 'special_instructions', 
             'reference_upload', 'selected_ai_preview', 'showModal'
         ]);
@@ -105,19 +150,20 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function closeModal()
     {
         $this->showModal = false;
-        $this->reset(['currentStep', 'garment_type_id', 'fabric_preference', 'quantity', 'preferred_completion_date', 'special_instructions', 'reference_upload', 'selected_ai_preview']);
+        $this->reset(['currentStep', 'shop_id', 'garment_type_id', 'fabric_preference', 'quantity', 'preferred_completion_date', 'special_instructions', 'reference_upload', 'selected_ai_preview']);
     }
 
     public function with(): array
     {
-        $query = Order::where('user_id', auth()->id())->with(['garmentType', 'shop'])->latest();
+        $query = Order::where('user_id', auth()->id())->with(['garmentType', 'shop', 'preMadeProduct'])->latest();
         if ($this->activeTab !== 'all') {
             $query->where('status', $this->activeTab);
         }
         return [
             'orders' => $query->get(),
-            'garmentTypes' => GarmentType::with('shop')->get(),
-            'fabrics' => Fabric::where('in_stock', true)->get(),
+            'shops' => Shop::where('is_active', true)->select('id', 'name', 'city', 'specialties')->get(),
+            'garmentTypes' => $this->shop_id ? GarmentType::where('shop_id', $this->shop_id)->select('id', 'name', 'base_price')->get() : collect(),
+            'fabrics' => $this->shop_id ? Fabric::where('shop_id', $this->shop_id)->where('in_stock', true)->select('id', 'name', 'material')->get() : collect(),
             'aiPreviews' => VirtualTryon::where('user_id', auth()->id())
                                 ->where('status', 'completed')
                                 ->whereNotNull('preview_path')
@@ -131,6 +177,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 'completed' => Order::where('user_id', auth()->id())->where('status', 'completed')->count(),
             ],
             // For summary view
+            'selectedShop' => $this->shop_id ? Shop::find($this->shop_id) : null,
             'selectedGarment' => $this->garment_type_id ? GarmentType::find($this->garment_type_id) : null,
             'selectedPreviewUrl' => $this->selected_ai_preview ? VirtualTryon::find($this->selected_ai_preview)?->preview_path : null,
         ];
@@ -143,9 +190,14 @@ new #[Layout('components.layouts.app')] class extends Component {
             <h1 class="text-2xl font-bold text-zinc-900 dark:text-white" style="font-family: 'Poppins';">My Orders</h1>
             <p class="text-zinc-500 mt-1">Track and manage your tailoring orders.</p>
         </div>
-        <flux:button wire:click="$set('showModal', true)" variant="primary" class="!bg-primary-500 hover:!bg-primary-600">
-            <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
-            New Order
+        <flux:button wire:click="$set('showModal', true)" variant="primary" class="!bg-primary-500 hover:!bg-primary-600 click-feedback">
+            <div wire:loading wire:target="$set('showModal', true)" class="btn-spinner">
+                <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full spinner"></div>
+            </div>
+            <span wire:loading.remove wire:target="$set('showModal', true)" class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/></svg>
+                New Order
+            </span>
         </flux:button>
     </div>
 
@@ -165,41 +217,157 @@ new #[Layout('components.layouts.app')] class extends Component {
     </div>
 
     <!-- Order Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 gap-4">
         @forelse($orders as $order)
-            <div class="tc-card animate-fade-in-up">
-                <div class="flex items-start justify-between mb-3">
-                    <p class="text-sm font-mono font-semibold text-primary-600 dark:text-primary-400">{{ $order->tracking_number }}</p>
-                    <span class="tc-badge tc-badge-{{ $order->status }}">{{ ucwords(str_replace('_', ' ', $order->status)) }}</span>
+            <!-- Mobile-First Responsive Card -->
+            <div class="tc-card hover-lift interactive-card animate-fade-in-up cursor-pointer" 
+                 style="--stagger-index: {{ $loop->index }}"
+                 x-data="{ showDetails: false }"
+                 @click="showDetails = !showDetails">
+                
+                <!-- Main Card Content -->
+                <div class="flex items-start justify-between gap-4">
+                    <!-- Order Info -->
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="w-12 h-12 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center shrink-0">
+                            @if($order->order_type === 'pre_made')
+                                <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a.997.997 0 01-1.414 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                            @else
+                                <svg class="w-6 h-6 text-primary-600 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/>
+                                </svg>
+                            @endif
+                        </div>
+                        
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-start justify-between gap-2 mb-1">
+                                <h3 class="font-semibold text-zinc-900 dark:text-white text-sm truncate">
+                                    @if($order->order_type === 'pre_made')
+                                        {{ $order->preMadeProduct?->name ?? 'Pre-made Product' }}
+                                    @else
+                                        {{ $order->garmentType?->name ?? 'Custom Tailoring' }}
+                                    @endif
+                                </h3>
+                                <span class="tc-badge tc-badge-{{ $order->status }} text-xs shrink-0">
+                                    {{ ucwords(str_replace('_', ' ', $order->status)) }}
+                                </span>
+                            </div>
+                            
+                            <p class="text-xs font-mono font-semibold text-primary-600 dark:text-primary-400 mb-2">
+                                {{ $order->tracking_number }}
+                            </p>
+                            
+                            <div class="flex items-center justify-between">
+                                <p class="text-xs text-zinc-500 truncate">{{ $order->shop?->name ?? 'Unassigned Shop' }}</p>
+                                <p class="text-sm font-bold text-zinc-900 dark:text-white" style="font-family: 'Poppins';">
+                                    ₱{{ number_format($order->total_amount, 2) }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Expand Icon -->
+                    <div class="ml-2 shrink-0">
+                        <svg class="w-5 h-5 text-zinc-400 transition-transform" 
+                             :class="{ 'rotate-180': showDetails }"
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </div>
                 </div>
-                <h3 class="font-semibold text-zinc-900 dark:text-white">{{ $order->garmentType?->name ?? 'Custom' }}</h3>
-                <p class="text-xs text-zinc-500 mb-2">{{ $order->shop?->name ?? 'Unassigned Shop' }}</p>
-                <div class="space-y-1 text-sm text-zinc-500">
-                    @if($order->fabric_preference)
-                        <p>Fabric: {{ $order->fabric_preference }}</p>
-                    @endif
-                    <p>Qty: {{ $order->quantity }}</p>
-                </div>
-                <!-- Mini progress bar -->
-                <div class="flex gap-1 mt-4">
-                    @for($i = 0; $i < 7; $i++)
-                        <div class="h-1.5 flex-1 rounded-full {{ $i <= $order->status_index ? 'bg-primary-500' : 'bg-zinc-200 dark:bg-zinc-700' }}"></div>
+
+                <!-- Progress Bar -->
+                <div class="flex gap-1 mt-4 mb-3">
+                    @for($i = 0; $i < ($order->order_type === 'pre_made' ? 5 : 8); $i++)
+                        <div class="h-1.5 flex-1 rounded-full transition-all duration-500 animate-grow-up" 
+                             style="animation-delay: {{ $i * 100 }}ms; {{ $i <= $order->status_index ? 'background-color: rgb(47, 93, 80);' : 'background-color: rgb(228, 228, 231);' }}">
+                        </div>
                     @endfor
                 </div>
-                <div class="flex items-center justify-between mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-700">
-                    <p class="text-lg font-bold text-zinc-900 dark:text-white" style="font-family: 'Poppins';">₱{{ number_format($order->total_amount, 2) }}</p>
-                    @if($order->estimated_completion)
-                        <p class="text-xs text-zinc-400">Est. {{ $order->estimated_completion->format('M d') }}</p>
-                    @endif
+                
+                <!-- Expandable Details -->
+                <div x-show="showDetails" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 max-h-0"
+                     x-transition:enter-end="opacity-100 max-h-96"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 max-h-96"
+                     x-transition:leave-end="opacity-0 max-h-0"
+                     class="overflow-hidden">
+                    <div class="pt-4 mt-4 border-t border-zinc-100 dark:border-zinc-700 space-y-3">
+                        
+                        @if($order->order_type === 'pre_made' && $order->product_size)
+                        <div class="flex justify-between text-sm">
+                            <span class="text-zinc-500">Size:</span>
+                            <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $order->product_size }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->fabric_preference)
+                        <div class="flex justify-between text-sm">
+                            <span class="text-zinc-500">Fabric:</span>
+                            <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $order->fabric_preference }}</span>
+                        </div>
+                        @endif
+                        
+                        <div class="flex justify-between text-sm">
+                            <span class="text-zinc-500">Quantity:</span>
+                            <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $order->quantity }}</span>
+                        </div>
+                        
+                        @if($order->estimated_completion)
+                        <div class="flex justify-between text-sm">
+                            <span class="text-zinc-500">Est. Completion:</span>
+                            <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $order->estimated_completion->format('M d, Y') }}</span>
+                        </div>
+                        @endif
+                        
+                        @if($order->special_instructions)
+                        <div class="p-3 bg-amber-50 dark:bg-amber-900/10 rounded-lg">
+                            <p class="text-xs text-amber-700 dark:text-amber-300">
+                                <span class="font-semibold">Note:</span> {{ $order->special_instructions }}
+                            </p>
+                        </div>
+                        @endif
+                        
+                        <!-- Quick Actions -->
+                        <div class="flex gap-2 pt-2">
+                            <button 
+                                @click.stop="$wire.redirect('{{ route('customer.tracking') }}?tracking={{ $order->tracking_number }}')"
+                                class="flex-1 py-2 px-3 text-xs font-medium text-primary-600 bg-primary-50 dark:bg-primary-900/20 rounded-lg hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors click-feedback">
+                                Track Order
+                            </button>
+                            @if($order->status === 'ready_for_pickup')
+                            <button 
+                                @click.stop=""
+                                class="flex-1 py-2 px-3 text-xs font-medium text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors click-feedback">
+                                Ready to Collect
+                            </button>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
         @empty
-            <div class="col-span-full tc-card text-center py-12">
-                <svg class="w-16 h-16 mx-auto text-zinc-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"/></svg>
-                <p class="text-zinc-400">No orders found. Place your first order!</p>
-            </div>
+            <x-enhanced-empty-state
+                icon="orders"
+                title="No orders found"
+                description="No orders found. Ready to place your first order?"
+                :actions="[
+                    ['type' => 'primary', 'label' => 'Create Your First Order', 'wire:click' => '$set(\'showModal\', true)']
+                ]"
+            />
         @endforelse
     </div>
+
+    <!-- Floating Action Button -->
+    <x-floating-action-button 
+        icon="plus" 
+        tooltip="Create New Order" 
+        wire:click="$set('showModal', true)"
+    />
 
     <!-- NEW ORDER MODAL REDESIGN -->
     @if($showModal)
@@ -264,14 +432,30 @@ new #[Layout('components.layouts.app')] class extends Component {
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
                         
+                        <!-- Tailoring Shop -->
+                        <div class="md:col-span-2">
+                            <label class="block text-[14px] font-medium text-zinc-700 dark:text-zinc-300 mb-2">Tailoring Shop <span class="text-red-500">*</span></label>
+                            <select wire:model.live="shop_id" class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer">
+                                <option value="">Select a tailor shop...</option>
+                                @foreach($shops as $shop)
+                                    <option value="{{ $shop->id }}">{{ $shop->name }} ({{ $shop->city }}) — Specialties: {{ implode(', ', $shop->specialties ?? []) }}</option>
+                                @endforeach
+                            </select>
+                            @error('shop_id') <p class="text-[12px] text-red-500 mt-1">{{ $message }}</p> @enderror
+                        </div>
+
                         <!-- Garment Type -->
                         <div>
                             <label class="block text-[14px] font-medium text-zinc-700 dark:text-zinc-300 mb-2">Garment Type <span class="text-red-500">*</span></label>
-                            <select wire:model="garment_type_id" class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer">
-                                <option value="">Select garment type...</option>
-                                @foreach($garmentTypes as $gt)
-                                    <option value="{{ $gt->id }}">{{ $gt->name }} ({{ $gt->shop?->name ?? 'Global' }}) — ₱{{ number_format($gt->base_price, 2) }}</option>
-                                @endforeach
+                            <select wire:model="garment_type_id" {{ empty($shop_id) ? 'disabled' : '' }} class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                @if(empty($shop_id))
+                                    <option value="">Please select a shop first...</option>
+                                @else
+                                    <option value="">Select garment type...</option>
+                                    @foreach($garmentTypes as $gt)
+                                        <option value="{{ $gt->id }}">{{ $gt->name }} — ₱{{ number_format($gt->base_price, 2) }}</option>
+                                    @endforeach
+                                @endif
                             </select>
                             @error('garment_type_id') <p class="text-[12px] text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -279,11 +463,15 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <!-- Fabric Preference -->
                         <div>
                             <label class="block text-[14px] font-medium text-zinc-700 dark:text-zinc-300 mb-2">Fabric Preference</label>
-                            <select wire:model="fabric_preference" class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer">
-                                <option value="">Select fabric (optional)...</option>
-                                @foreach($fabrics as $fabric)
-                                    <option value="{{ $fabric->name }}">{{ $fabric->name }} ({{ $fabric->material }})</option>
-                                @endforeach
+                            <select wire:model="fabric_preference" {{ empty($shop_id) ? 'disabled' : '' }} class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                                @if(empty($shop_id))
+                                    <option value="">Please select a shop first...</option>
+                                @else
+                                    <option value="">Select fabric (optional)...</option>
+                                    @foreach($fabrics as $fabric)
+                                        <option value="{{ $fabric->name }}">{{ $fabric->name }} ({{ $fabric->material }})</option>
+                                    @endforeach
+                                @endif
                             </select>
                         </div>
 
@@ -324,32 +512,18 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 h-full">
                         
                         <!-- Upload Area -->
-                        <div class="relative flex flex-col h-full rounded-2xl border-2 border-dashed transition-all p-6 group {{ $reference_upload ? 'border-zinc-900 bg-zinc-50 dark:bg-zinc-800' : 'border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-800/50' }} {{ $selected_ai_preview ? 'opacity-40 grayscale pointer-events-none' : '' }}">
-                            <input type="file" wire:model="reference_upload" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
-                            
-                            <div class="flex-1 flex flex-col items-center justify-center text-center">
-                                @if ($reference_upload)
-                                    <div class="w-32 h-32 rounded-xl overflow-hidden border-4 border-white dark:border-zinc-800 shadow-md mb-4 relative z-20">
-                                        <img src="{{ $reference_upload->temporaryUrl() }}" class="object-cover w-full h-full" alt="Preview">
-                                    </div>
-                                    <p class="text-[14px] font-medium text-zinc-900 dark:text-white">{{ $reference_upload->getClientOriginalName() }}</p>
-                                    <p class="text-[12px] text-zinc-500 mt-1">Click or drag to replace</p>
-                                @else
-                                    <div class="w-16 h-16 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <svg class="w-8 h-8 text-zinc-400 group-hover:text-zinc-900 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a2.25 2.25 0 01-2.25-2.25V6.75A2.25 2.25 0 016.75 4.5h10.5a2.25 2.25 0 012.25 2.25v10.5a2.25 2.25 0 01-2.25 2.25h-10.5z" /></svg>
-                                    </div>
-                                    <p class="text-[14px] font-medium text-zinc-900 dark:text-white">Drag & Drop Image</p>
-                                    <p class="text-[12px] text-zinc-500 mt-1">or click to browse files</p>
-                                    <p class="text-[12px] text-zinc-400 mt-4">JPG, PNG, WEBP (Max 10MB)</p>
-                                @endif
-                            </div>
-                            <div wire:loading wire:target="reference_upload" class="absolute inset-0 bg-white/80 dark:bg-zinc-900/80 flex items-center justify-center rounded-2xl z-20">
-                                <div class="flex flex-col items-center">
-                                    <div class="w-8 h-8 border-4 border-zinc-200 border-t-zinc-900 rounded-full animate-spin mb-2"></div>
-                                    <span class="text-[12px] font-medium text-zinc-900">Uploading...</span>
-                                </div>
-                            </div>
-                            @error('reference_upload') <span class="text-[12px] text-red-500 mt-2 block text-center absolute bottom-2 w-full">{{ $message }}</span> @enderror
+                        <div class="{{ $selected_ai_preview ? 'opacity-40 grayscale pointer-events-none' : '' }}">
+                            <x-enhanced-file-upload 
+                                label="Upload Design Reference"
+                                description="Drag & drop your design image here or click to browse"
+                                accept="image/*"
+                                maxSize="10MB"
+                                wire:model="reference_upload"
+                                :preview="true"
+                            />
+                            @error('reference_upload') 
+                                <p class="text-xs text-red-500 mt-2">{{ $message }}</p> 
+                            @enderror
                         </div>
 
                         <!-- AI Previews Area -->
@@ -412,8 +586,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 <h4 class="text-[12px] font-bold text-zinc-400 uppercase tracking-wider mb-3">Garment Information</h4>
                                 <div class="bg-zinc-50 dark:bg-zinc-900/50 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800">
                                     <div class="grid grid-cols-2 gap-y-4">
+                                        <div class="col-span-2">
+                                            <p class="text-[12px] text-zinc-500">Tailoring Shop</p>
+                                            <p class="text-[15px] font-semibold text-zinc-900 dark:text-white">{{ $selectedShop?->name ?? 'Not specified' }}</p>
+                                        </div>
                                         <div>
-                                            <p class="text-[12px] text-zinc-500">Type</p>
+                                            <p class="text-[12px] text-zinc-500">Garment Type</p>
                                             <p class="text-[14px] font-medium text-zinc-900 dark:text-white">{{ $selectedGarment?->name ?? 'Not specified' }}</p>
                                         </div>
                                         <div>
@@ -487,7 +665,12 @@ new #[Layout('components.layouts.app')] class extends Component {
                     @endif
                     
                     @if($currentStep < 3)
-                        <button wire:click="nextStep" class="px-6 py-2.5 text-[14px] font-medium text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors shadow-sm">Next Step</button>
+                        <button wire:click="nextStep" class="px-6 py-2.5 text-[14px] font-medium text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors shadow-sm click-feedback relative">
+                            <div wire:loading wire:target="nextStep" class="absolute inset-0 flex items-center justify-center">
+                                <div class="w-4 h-4 border-2 border-white dark:border-zinc-900 border-t-transparent rounded-full spinner"></div>
+                            </div>
+                            <span wire:loading.remove wire:target="nextStep">Next Step</span>
+                        </button>
                     @else
                         <button wire:click="createOrder" wire:loading.attr="disabled" wire:target="createOrder" class="px-6 py-2.5 text-[14px] font-medium text-white bg-zinc-900 dark:bg-white dark:text-zinc-900 rounded-xl hover:bg-zinc-800 dark:hover:bg-zinc-100 transition-colors shadow-sm flex items-center gap-2">
                             <span wire:loading.remove wire:target="createOrder">Place Order</span>

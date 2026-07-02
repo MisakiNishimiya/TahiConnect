@@ -47,15 +47,58 @@ class User extends Authenticatable
     }
 
     /**
-     * The shop this user owns (shop_owner role).
-     * Shop owners find their shop via User records with shop_id, but
-     * they can also be looked up by checking staff/members.
+     * Get the shop this user owns (for shop_owner role).
      */
-    public function ownedShops()
+    public function ownedShop()
     {
-        return Shop::whereIn('id',
-            User::where('id', $this->id)->where('role', 'shop_owner')->pluck('shop_id')
-        );
+        if ($this->role === 'shop_owner' && $this->shop_id) {
+            return $this->belongsTo(Shop::class, 'shop_id');
+        }
+        return null;
+    }
+
+    /**
+     * Check if this user can access the given shop's data.
+     */
+    public function canAccessShop($shopId): bool
+    {
+        if ($this->isAdmin()) {
+            return true; // Admins can access all shops
+        }
+        
+        if ($this->isCustomer()) {
+            return true; // Customers can view any shop but orders are scoped differently
+        }
+        
+        if ($this->isShopOwner() || $this->isStaff()) {
+            return $this->shop_id == $shopId;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Scope query to shop-specific data for staff and owners.
+     */
+    public function scopeForShop($query, $shopId = null)
+    {
+        $user = auth()->user();
+        
+        if (!$user) {
+            return $query->whereRaw('1 = 0'); // No access if not authenticated
+        }
+        
+        if ($user->isAdmin()) {
+            return $query; // Admins see everything
+        }
+        
+        $targetShopId = $shopId ?? $user->shop_id;
+        
+        if ($user->isShopOwner() || $user->isStaff()) {
+            return $query->where('shop_id', $targetShopId);
+        }
+        
+        return $query;
     }
 
     // Relationships

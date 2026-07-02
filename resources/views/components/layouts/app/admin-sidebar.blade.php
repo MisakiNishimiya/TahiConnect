@@ -3,7 +3,8 @@
     <head>
         @include('partials.head')
     </head>
-    <body class="min-h-screen bg-cream-50 dark:bg-zinc-800">
+    <body class="min-h-screen bg-cream-50 dark:bg-zinc-800 bg-mesh-primary">
+        <div id="nprogress-bar"></div>
         <flux:sidebar sticky stashable class="border-r border-primary-100 bg-white dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 

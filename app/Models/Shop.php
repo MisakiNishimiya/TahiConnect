@@ -69,6 +69,11 @@ class Shop extends Model
         return $this->hasMany(Fabric::class);
     }
 
+    public function preMadeProducts(): HasMany
+    {
+        return $this->hasMany(PreMadeProduct::class);
+    }
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class);

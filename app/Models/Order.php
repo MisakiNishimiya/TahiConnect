@@ -68,6 +68,11 @@ class Order extends Model
         return $this->hasMany(DesignReference::class);
     }
 
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(ShopReview::class);
+    }
+
     // ── Status helpers ────────────────────────────────────────────────────────
 
     /**

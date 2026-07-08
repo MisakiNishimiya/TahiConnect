@@ -12,7 +12,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function with(): array
     {
-        $orders = Order::with(['user', 'garmentType', 'staff'])
+        $orders = Order::with(['user', 'garmentType', 'staff', 'designReferences'])
             ->when($this->search, fn($q) => $q->where('tracking_number', 'like', "%{$this->search}%")->orWhereHas('user', fn($q2) => $q2->where('name', 'like', "%{$this->search}%")))
             ->when($this->status, fn($q) => $q->where('status', $this->status))
             ->latest()->paginate(15);
@@ -62,7 +62,8 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </thead>
                 <tbody class="divide-y divide-zinc-50 dark:divide-zinc-800">
                     @forelse($orders as $order)
-                        <tr class="hover:bg-cream-50 dark:hover:bg-zinc-700/30 transition-colors duration-200 group">
+                        <tr class="hover:bg-cream-50 dark:hover:bg-zinc-700/30 transition-colors duration-200 group cursor-pointer"
+                            x-data="{ open: false }" @click="open = !open">
                             <td class="py-4 px-4 font-mono text-xs font-semibold text-primary-600 dark:text-primary-400">{{ $order->tracking_number }}</td>
                             <td class="py-4 px-4">
                                 <div class="flex items-center gap-3">
@@ -86,6 +87,55 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <td class="py-4 px-4"><span class="tc-badge tc-badge-{{ $order->status }}">{{ ucwords(str_replace('_',' ',$order->status)) }}</span></td>
                             <td class="py-4 px-4 text-right font-bold text-zinc-900 dark:text-white">₱{{ number_format($order->total_amount, 2) }}</td>
                             <td class="py-4 px-4 text-zinc-500 text-sm hidden xl:table-cell">{{ $order->estimated_completion?->format('M d, Y') ?? '—' }}</td>
+                        </tr>
+                        {{-- Expandable Design References + Details Row --}}
+                        <tr x-show="open" x-transition class="bg-zinc-50 dark:bg-zinc-800/50">
+                            <td colspan="7" class="px-6 py-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                    {{-- Order Details --}}
+                                    <div class="space-y-2">
+                                        @if($order->fabric_preference)
+                                        <div class="flex gap-2"><span class="text-zinc-400 w-32 shrink-0">Fabric:</span><span class="text-zinc-700 dark:text-zinc-300">{{ $order->fabric_preference }}</span></div>
+                                        @endif
+                                        @if($order->special_instructions)
+                                        <div class="flex gap-2"><span class="text-zinc-400 w-32 shrink-0">Instructions:</span><span class="text-zinc-700 dark:text-zinc-300">{{ $order->special_instructions }}</span></div>
+                                        @endif
+                                        @if($order->product_size)
+                                        <div class="flex gap-2"><span class="text-zinc-400 w-32 shrink-0">Size:</span><span class="text-zinc-700 dark:text-zinc-300">{{ $order->product_size }}</span></div>
+                                        @endif
+                                    </div>
+                                    {{-- Design References --}}
+                                    <div>
+                                        <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Design References</p>
+                                        @if($order->designReferences->count())
+                                            <div class="flex flex-wrap gap-2">
+                                                @foreach($order->designReferences as $ref)
+                                                    @php $isImage = in_array(strtolower($ref->file_type), ['jpg','jpeg','png','gif','webp']); @endphp
+                                                    <a href="{{ Storage::url($ref->file_path) }}" target="_blank"
+                                                       class="flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-lg hover:border-primary-300 transition-colors">
+                                                        @if($isImage)
+                                                            <img src="{{ Storage::url($ref->file_path) }}" alt="{{ $ref->file_name }}" class="w-10 h-10 object-cover rounded border border-zinc-200">
+                                                        @else
+                                                            <div class="w-10 h-10 rounded bg-zinc-100 dark:bg-zinc-600 flex items-center justify-center">
+                                                                <svg class="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0013 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                                            </div>
+                                                        @endif
+                                                        <span class="text-xs text-zinc-600 dark:text-zinc-400 max-w-[120px] truncate">{{ $ref->file_name }}</span>
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        @elseif($order->design_reference_path)
+                                            <a href="{{ Storage::url($order->design_reference_path) }}" target="_blank"
+                                               class="inline-flex items-center gap-2 px-3 py-2 bg-white dark:bg-zinc-700 border border-zinc-200 dark:border-zinc-600 rounded-lg hover:border-primary-300 transition-colors">
+                                                <img src="{{ Storage::url($order->design_reference_path) }}" alt="Design" class="w-10 h-10 object-cover rounded border border-zinc-200">
+                                                <span class="text-xs text-zinc-600 dark:text-zinc-400">View Design Reference</span>
+                                            </a>
+                                        @else
+                                            <p class="text-xs text-zinc-400 italic">No design references uploaded.</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr><td colspan="7" class="py-16 text-center">

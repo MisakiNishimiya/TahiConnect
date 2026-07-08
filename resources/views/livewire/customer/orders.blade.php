@@ -113,7 +113,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function with(): array
     {
         $query = Order::where('user_id', auth()->id())
-            ->with(['garmentType', 'preMadeProduct'])
+            ->with(['garmentType', 'preMadeProduct', 'designReferences'])
             ->latest();
         if ($this->activeTab !== 'all') {
             $query->where('status', $this->activeTab);
@@ -290,7 +290,40 @@ new #[Layout('components.layouts.app')] class extends Component {
                             </p>
                         </div>
                         @endif
-                        
+
+                        <!-- Design References -->
+                        @if($order->designReferences && $order->designReferences->count())
+                        <div>
+                            <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Design References</p>
+                            <div class="flex flex-wrap gap-2">
+                                @foreach($order->designReferences as $ref)
+                                    @php $isImage = in_array(strtolower($ref->file_type), ['jpg','jpeg','png','gif','webp']); @endphp
+                                    <a href="{{ Storage::url($ref->file_path) }}" target="_blank"
+                                       class="flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-primary-300 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors group/ref">
+                                        @if($isImage)
+                                            <img src="{{ Storage::url($ref->file_path) }}" alt="{{ $ref->file_name }}"
+                                                 class="w-8 h-8 object-cover rounded border border-zinc-200">
+                                        @else
+                                            <div class="w-8 h-8 rounded bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                                                <svg class="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0013 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                            </div>
+                                        @endif
+                                        <span class="text-xs text-zinc-600 dark:text-zinc-400 max-w-[100px] truncate group-hover/ref:text-primary-600">{{ $ref->file_name }}</span>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                        @elseif($order->design_reference_path)
+                        <div>
+                            <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Design Reference</p>
+                            <a href="{{ Storage::url($order->design_reference_path) }}" target="_blank"
+                               class="inline-flex items-center gap-2 px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors">
+                                <img src="{{ Storage::url($order->design_reference_path) }}" alt="Design reference" class="w-8 h-8 object-cover rounded border border-zinc-200">
+                                <span class="text-xs text-zinc-600 dark:text-zinc-400">View Design</span>
+                            </a>
+                        </div>
+                        @endif
+
                         <!-- Quick Actions -->
                         <div class="flex gap-2 pt-2">
                             <button 

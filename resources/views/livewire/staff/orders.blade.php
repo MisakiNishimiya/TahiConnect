@@ -42,7 +42,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         $this->selectedOrder = Order::where('id', $orderId)
             ->where('staff_id', auth()->id())
-            ->with(['user', 'garmentType'])
+            ->with(['user', 'garmentType', 'designReferences'])
             ->first();
         $this->showDetailModal = true;
     }
@@ -321,6 +321,38 @@ new #[Layout('components.layouts.app')] class extends Component {
                             <div class="p-4 bg-amber-50 rounded-xl border border-amber-200">
                                 <p class="text-xs text-amber-600 font-medium mb-1">Special Instructions</p>
                                 <p class="text-sm text-amber-800">{{ $selectedOrder->special_instructions }}</p>
+                            </div>
+                        @endif
+
+                        {{-- Design References --}}
+                        @if($selectedOrder->designReferences && $selectedOrder->designReferences->count())
+                            <div>
+                                <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Design References</p>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($selectedOrder->designReferences as $ref)
+                                        @php $isImage = in_array(strtolower($ref->file_type), ['jpg','jpeg','png','gif','webp']); @endphp
+                                        <a href="{{ Storage::url($ref->file_path) }}" target="_blank"
+                                           class="flex items-center gap-2 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition-colors">
+                                            @if($isImage)
+                                                <img src="{{ Storage::url($ref->file_path) }}" alt="{{ $ref->file_name }}" class="w-10 h-10 object-cover rounded border border-zinc-200">
+                                            @else
+                                                <div class="w-10 h-10 rounded bg-zinc-200 flex items-center justify-center">
+                                                    <svg class="w-5 h-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0013 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                                                </div>
+                                            @endif
+                                            <span class="text-xs text-zinc-600 max-w-[120px] truncate">{{ $ref->file_name }}</span>
+                                        </a>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @elseif($selectedOrder->design_reference_path)
+                            <div>
+                                <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2">Design Reference</p>
+                                <a href="{{ Storage::url($selectedOrder->design_reference_path) }}" target="_blank"
+                                   class="inline-flex items-center gap-2 px-3 py-2 bg-zinc-50 border border-zinc-200 rounded-lg hover:border-primary-300 transition-colors">
+                                    <img src="{{ Storage::url($selectedOrder->design_reference_path) }}" alt="Design" class="w-10 h-10 object-cover rounded">
+                                    <span class="text-xs text-zinc-600">View Design Reference</span>
+                                </a>
                             </div>
                         @endif
                     </div>

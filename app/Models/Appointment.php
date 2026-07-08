@@ -15,6 +15,18 @@ class Appointment extends Model
         'user_id', 'staff_id', 'shop_id', 'date', 'time', 'type', 'status', 'notes',
     ];
 
+    /**
+     * Auto-assign the single shop on creation if not provided.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function ($appointment) {
+            if (empty($appointment->shop_id)) {
+                $appointment->shop_id = \App\Models\Shop::instance()->id;
+            }
+        });
+    }
+
     public function shop(): BelongsTo
     {
         return $this->belongsTo(Shop::class);

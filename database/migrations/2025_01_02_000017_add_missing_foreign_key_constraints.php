@@ -9,113 +9,102 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Add proper foreign key constraint for shop owner
-        Schema::table('shops', function (Blueprint $table) {
-            $table->foreign('owner_id')->references('id')->on('users')->nullOnDelete();
-        });
+        // Add proper foreign key constraint for shop owner (skip if already exists)
+        try {
+            Schema::table('shops', function (Blueprint $table) {
+                $table->foreign('owner_id')->references('id')->on('users')->nullOnDelete();
+            });
+        } catch (\Exception $e) {
+            // FK may already exist — safe to continue
+        }
 
         // Add index for shop-staff relationships (check if exists first)
         if (!Schema::hasIndex('users', 'users_shop_id_role_index')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->index(['shop_id', 'role']);
-            });
+            if (Schema::hasColumn('users', 'shop_id')) {
+                Schema::table('users', function (Blueprint $table) {
+                    $table->index(['shop_id', 'role']);
+                });
+            }
         }
 
-        // Fix orders table - change nullable shop_id to required with proper cascading
-        Schema::table('orders', function (Blueprint $table) {
-            // Drop existing foreign key if it exists
-            $table->dropForeign(['shop_id']);
-        });
+        // Fix orders table - drop existing FK then re-add with cascade
+        // Note: NOT NULL enforcement is handled by convert_to_single_shop after data is seeded
+        try {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->dropForeign(['shop_id']);
+            });
+        } catch (\Exception $e) { /* FK may not exist */ }
 
-        Schema::table('orders', function (Blueprint $table) {
-            // Make shop_id NOT NULL (orders must belong to a shop)
-            $table->foreignId('shop_id')->nullable(false)->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
-        });
-
-        // Note: SQLite doesn't support CHECK constraints with subqueries in the same way as other databases.
-        // We'll implement this validation at the application level instead.
-        
-        // Add constraint documentation for future reference
-        DB::statement("
-            -- This constraint would ensure staff can only be assigned to orders from their own shop:
-            -- CHECK (staff_id IS NULL OR (SELECT shop_id FROM users WHERE id = staff_id AND role = 'tailor_staff') = shop_id)
-            -- Implemented at application level due to SQLite limitations
-        ");
+        try {
+            Schema::table('orders', function (Blueprint $table) {
+                $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
+            });
+        } catch (\Exception $e) { /* FK may already exist */ }
 
         // Fix garment_types table
-        Schema::table('garment_types', function (Blueprint $table) {
-            $table->dropForeign(['shop_id']);
-        });
+        try {
+            Schema::table('garment_types', function (Blueprint $table) {
+                $table->dropForeign(['shop_id']);
+            });
+        } catch (\Exception $e) { /* FK may not exist */ }
 
-        Schema::table('garment_types', function (Blueprint $table) {
-            $table->foreignId('shop_id')->nullable(false)->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
-        });
+        try {
+            Schema::table('garment_types', function (Blueprint $table) {
+                $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
+            });
+        } catch (\Exception $e) { /* FK may already exist */ }
 
         // Fix fabrics table
-        Schema::table('fabrics', function (Blueprint $table) {
-            $table->dropForeign(['shop_id']);
-        });
+        try {
+            Schema::table('fabrics', function (Blueprint $table) {
+                $table->dropForeign(['shop_id']);
+            });
+        } catch (\Exception $e) { /* FK may not exist */ }
 
-        Schema::table('fabrics', function (Blueprint $table) {
-            $table->foreignId('shop_id')->nullable(false)->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
-        });
+        try {
+            Schema::table('fabrics', function (Blueprint $table) {
+                $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
+            });
+        } catch (\Exception $e) { /* FK may already exist */ }
 
-        // Fix appointments table - ensure appointments belong to shops
-        Schema::table('appointments', function (Blueprint $table) {
-            $table->dropForeign(['shop_id']);
-        });
+        // Fix appointments table
+        try {
+            Schema::table('appointments', function (Blueprint $table) {
+                $table->dropForeign(['shop_id']);
+            });
+        } catch (\Exception $e) { /* FK may not exist */ }
 
-        Schema::table('appointments', function (Blueprint $table) {
-            $table->foreignId('shop_id')->nullable(false)->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
-        });
-
-        // Add constraint documentation for appointments
-        DB::statement("
-            -- This constraint would ensure appointment staff matches shop:
-            -- CHECK (staff_id IS NULL OR (SELECT shop_id FROM users WHERE id = staff_id AND role = 'tailor_staff') = shop_id)
-            -- Implemented at application level due to SQLite limitations
-        ");
+        try {
+            Schema::table('appointments', function (Blueprint $table) {
+                $table->foreign('shop_id')->references('id')->on('shops')->cascadeOnDelete();
+            });
+        } catch (\Exception $e) { /* FK may already exist */ }
     }
 
     public function down(): void
     {
-        // Remove constraint documentation (no actual constraints to remove in SQLite)
-        
-        // Reverse changes to tables
-        Schema::table('shops', function (Blueprint $table) {
-            $table->dropForeign(['owner_id']);
-        });
+        try {
+            Schema::table('shops', function (Blueprint $table) {
+                $table->dropForeign(['owner_id']);
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropIndex(['shop_id', 'role']);
-        });
+        try {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropIndex(['shop_id', 'role']);
+            });
+        } catch (\Exception $e) {}
 
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign(['shop_id']);
-            $table->foreignId('shop_id')->nullable()->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->nullOnDelete();
-        });
-
-        Schema::table('garment_types', function (Blueprint $table) {
-            $table->dropForeign(['shop_id']);
-            $table->foreignId('shop_id')->nullable()->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->nullOnDelete();
-        });
-
-        Schema::table('fabrics', function (Blueprint $table) {
-            $table->dropForeign(['shop_id']);
-            $table->foreignId('shop_id')->nullable()->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->nullOnDelete();
-        });
-
-        Schema::table('appointments', function (Blueprint $table) {
-            $table->dropForeign(['shop_id']);
-            $table->foreignId('shop_id')->nullable()->change();
-            $table->foreign('shop_id')->references('id')->on('shops')->nullOnDelete();
-        });
+        foreach (['orders', 'garment_types', 'fabrics', 'appointments'] as $tbl) {
+            try {
+                Schema::table($tbl, function (Blueprint $table) {
+                    $table->dropForeign(['shop_id']);
+                });
+                Schema::table($tbl, function (Blueprint $table) use ($tbl) {
+                    $table->foreignId('shop_id')->nullable()->change();
+                    $table->foreign('shop_id')->references('id')->on('shops')->nullOnDelete();
+                });
+            } catch (\Exception $e) {}
+        }
     }
 };

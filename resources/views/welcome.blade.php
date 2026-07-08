@@ -3,13 +3,13 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TahiConnect | AI-Powered Tailoring Marketplace</title>
+    <title>{{ config('app.name') }} | Professional Tailoring Management</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700|poppins:500,600,700,800&display=swap" rel="stylesheet" />
     <!-- Styles -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @fluxStyles
+    
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #F5F1EA; color: #2D2D2D; }
         h1, h2, h3, h4, h5, h6 { font-family: 'Poppins', sans-serif; }
@@ -43,7 +43,7 @@
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-8 items-center">
                     <a href="#" class="text-zinc-600 hover:text-primary-custom font-medium transition-colors">Home</a>
-                    <a href="#shops" class="text-zinc-600 hover:text-primary-custom font-medium transition-colors">Browse Shops</a>
+                    <a href="#services" class="text-zinc-600 hover:text-primary-custom font-medium transition-colors">Services</a>
                     <a href="#how-it-works" class="text-zinc-600 hover:text-primary-custom font-medium transition-colors">How It Works</a>
                     <a href="#features" class="text-zinc-600 hover:text-primary-custom font-medium transition-colors">Features</a>
                     <a href="#about" class="text-zinc-600 hover:text-primary-custom font-medium transition-colors">About</a>
@@ -53,8 +53,7 @@
                 <!-- Desktop Buttons -->
                 <div class="hidden md:flex items-center space-x-4">
                     <a href="{{ route('login') }}" class="text-zinc-700 hover:text-primary-custom font-medium transition-colors">Login</a>
-                    <a href="{{ route('register') }}" class="px-5 py-2.5 rounded-full border-2 border-primary-custom text-primary-custom font-bold hover:bg-primary-custom hover:text-white transition-colors">Register</a>
-                    <a href="{{ route('register') }}?type=shop" class="px-5 py-2.5 rounded-full bg-primary-custom text-white font-bold hover:bg-[#1E3D34] transition-colors shadow-lg shadow-primary-custom/30">Register Your Shop</a>
+                    <a href="{{ route('register') }}" class="px-5 py-2.5 rounded-full bg-primary-custom text-white font-bold hover:bg-[#1E3D34] transition-colors shadow-lg shadow-primary-custom/30">Get Started</a>
                 </div>
 
                 <!-- Mobile menu button -->
@@ -73,13 +72,12 @@
         <div x-show="mobileMenuOpen" x-cloak class="md:hidden bg-white border-t border-zinc-200 absolute w-full shadow-xl" x-transition>
             <div class="px-4 pt-2 pb-6 space-y-1">
                 <a href="#" class="block px-3 py-3 text-base font-medium text-zinc-700 hover:bg-cream rounded-lg">Home</a>
-                <a href="#shops" class="block px-3 py-3 text-base font-medium text-zinc-700 hover:bg-cream rounded-lg">Browse Shops</a>
+                <a href="#services" class="block px-3 py-3 text-base font-medium text-zinc-700 hover:bg-cream rounded-lg">Services</a>
                 <a href="#how-it-works" class="block px-3 py-3 text-base font-medium text-zinc-700 hover:bg-cream rounded-lg">How It Works</a>
                 <a href="#features" class="block px-3 py-3 text-base font-medium text-zinc-700 hover:bg-cream rounded-lg">Features</a>
                 <div class="border-t border-zinc-100 my-2 pt-2"></div>
                 <a href="{{ route('login') }}" class="block px-3 py-3 text-base font-medium text-zinc-700">Login</a>
                 <a href="{{ route('register') }}" class="block px-3 py-3 text-base font-medium text-primary-custom">Register as Customer</a>
-                <a href="{{ route('register') }}?type=shop" class="block mt-2 text-center w-full px-4 py-3 border border-transparent text-base font-bold rounded-lg text-white bg-primary-custom">Register Your Shop</a>
             </div>
         </div>
     </nav>
@@ -97,18 +95,18 @@
                     <!-- Left Side: Copy -->
                     <div class="lg:col-span-6 text-center lg:text-left">
                         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-zinc-900 leading-tight tracking-tight mb-6">
-                            Find Trusted Tailors or <span class="text-primary-custom">Grow Your Tailoring Business</span> Online
+                            Professional Tailoring, <span class="text-primary-custom">Beautifully Managed</span>
                         </h1>
                         <p class="text-lg sm:text-xl text-zinc-600 mb-8 max-w-2xl mx-auto lg:mx-0">
-                            TahiConnect connects customers with tailoring shops through appointment booking, AI-powered virtual try-on, real-time order tracking, and digital tailoring management.
+                            Book appointments, order custom garments, track your orders in real time, and experience AI-powered virtual try-on — all in one place.
                         </p>
-                        
+
                         <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-10">
                             <a href="{{ route('register') }}" class="px-8 py-4 rounded-full bg-primary-custom text-white font-bold text-lg hover:bg-[#1E3D34] transition-all shadow-xl shadow-primary-custom/30 text-center">
-                                Find a Tailor
+                                Get Started
                             </a>
-                            <a href="{{ route('register') }}?type=shop" class="px-8 py-4 rounded-full border-2 border-primary-custom text-primary-custom bg-transparent font-bold text-lg hover:bg-primary-custom/5 transition-all text-center">
-                                Register Your Shop
+                            <a href="{{ route('login') }}" class="px-8 py-4 rounded-full border-2 border-primary-custom text-primary-custom bg-transparent font-bold text-lg hover:bg-primary-custom/5 transition-all text-center">
+                                Sign In
                             </a>
                         </div>
                         
@@ -194,112 +192,66 @@
             </div>
         </section>
 
-        <!-- 3. Marketplace Statistics -->
+        <!-- 3. Business Statistics -->
         <section class="py-12 bg-white border-y border-zinc-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-zinc-100">
                     <div class="text-center px-4">
-                        <p class="text-4xl font-extrabold text-primary-custom mb-2">500+</p>
-                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Registered Customers</p>
+                        <p class="text-4xl font-extrabold text-primary-custom mb-2">Custom</p>
+                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Made-to-Measure Garments</p>
                     </div>
                     <div class="text-center px-4">
-                        <p class="text-4xl font-extrabold text-secondary-custom mb-2">100+</p>
-                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Tailoring Shops</p>
+                        <p class="text-4xl font-extrabold text-secondary-custom mb-2">AI</p>
+                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Virtual Try-On</p>
                     </div>
                     <div class="text-center px-4">
-                        <p class="text-4xl font-extrabold text-primary-custom mb-2">1,000+</p>
-                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Orders Completed</p>
+                        <p class="text-4xl font-extrabold text-primary-custom mb-2">Real-Time</p>
+                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Order Tracking</p>
                     </div>
                     <div class="text-center px-4">
-                        <p class="text-4xl font-extrabold text-secondary-custom mb-2">95%</p>
-                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Customer Satisfaction</p>
+                        <p class="text-4xl font-extrabold text-secondary-custom mb-2">100%</p>
+                        <p class="text-sm font-medium text-zinc-500 uppercase tracking-wider">Data Ownership</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 4. Featured Tailoring Shops -->
-        <section id="shops" class="py-20 bg-cream">
+        <!-- 4. Our Services -->
+        <section id="services" class="py-20 bg-cream">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-16">
-                    <h2 class="text-3xl md:text-4xl font-bold text-zinc-900 mb-4">Featured Tailors Near You</h2>
-                    <p class="text-lg text-zinc-600">Discover top-rated tailoring shops in Davao City ready to bring your designs to life.</p>
+                    <h2 class="text-3xl md:text-4xl font-bold text-zinc-900 mb-4">Our Tailoring Services</h2>
+                    <p class="text-lg text-zinc-600">Quality craftsmanship for every garment, every occasion.</p>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Shop Card 1 -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden hover-lift flex flex-col">
-                        <div class="h-48 bg-zinc-200 w-full relative">
-                            <div class="absolute inset-0 bg-primary-custom/10"></div>
-                            <div class="absolute top-4 right-4 bg-white px-2 py-1 rounded-full text-xs font-bold text-zinc-700 shadow flex items-center gap-1">
-                                <flux:icon.star class="size-3 text-yellow-500" /> 4.9
-                            </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden hover-lift p-6">
+                        <div class="w-14 h-14 rounded-2xl bg-primary-custom/10 flex items-center justify-center mb-5">
+                            <svg class="w-7 h-7 text-primary-custom" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg>
                         </div>
-                        <div class="p-6 flex-1 flex flex-col">
-                            <h3 class="text-xl font-bold text-zinc-900 mb-1">Aling Rosa's Tailoring</h3>
-                            <p class="text-sm text-zinc-500 flex items-center gap-1 mb-4"><flux:icon.map-pin class="size-4" /> Bajada, Davao City</p>
-                            <div class="flex flex-wrap gap-2 mb-6">
-                                <span class="px-2 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-md font-medium">Barong Tagalog</span>
-                                <span class="px-2 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-md font-medium">Filipiniana</span>
-                            </div>
-                            <div class="mt-auto flex items-center justify-between">
-                                <div class="text-sm">Starts at <span class="font-bold text-primary-custom">₱3,500</span></div>
-                                <a href="{{ route('register') }}" class="text-sm font-bold text-primary-custom hover:text-secondary-custom transition-colors">View Shop →</a>
-                            </div>
-                        </div>
+                        <h3 class="text-xl font-bold text-zinc-900 mb-2">Custom Garments</h3>
+                        <p class="text-zinc-600 text-sm">Made-to-measure clothing tailored precisely to your measurements and personal style preferences.</p>
                     </div>
-                    <!-- Shop Card 2 -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden hover-lift flex flex-col">
-                        <div class="h-48 bg-zinc-200 w-full relative">
-                            <div class="absolute inset-0 bg-secondary-custom/10"></div>
-                            <div class="absolute top-4 right-4 bg-white px-2 py-1 rounded-full text-xs font-bold text-zinc-700 shadow flex items-center gap-1">
-                                <flux:icon.star class="size-3 text-yellow-500" /> 4.8
-                            </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden hover-lift p-6">
+                        <div class="w-14 h-14 rounded-2xl bg-secondary-custom/20 flex items-center justify-center mb-5">
+                            <svg class="w-7 h-7 text-primary-custom" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         </div>
-                        <div class="p-6 flex-1 flex flex-col">
-                            <h3 class="text-xl font-bold text-zinc-900 mb-1">Tahi ni Jun</h3>
-                            <p class="text-sm text-zinc-500 flex items-center gap-1 mb-4"><flux:icon.map-pin class="size-4" /> Matina, Davao City</p>
-                            <div class="flex flex-wrap gap-2 mb-6">
-                                <span class="px-2 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-md font-medium">Men's Suits</span>
-                                <span class="px-2 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-md font-medium">Uniforms</span>
-                            </div>
-                            <div class="mt-auto flex items-center justify-between">
-                                <div class="text-sm">Starts at <span class="font-bold text-primary-custom">₱2,500</span></div>
-                                <a href="{{ route('register') }}" class="text-sm font-bold text-primary-custom hover:text-secondary-custom transition-colors">View Shop →</a>
-                            </div>
-                        </div>
+                        <h3 class="text-xl font-bold text-zinc-900 mb-2">Ready-to-Wear</h3>
+                        <p class="text-zinc-600 text-sm">Browse our collection of pre-made garments available in multiple sizes for immediate purchase.</p>
                     </div>
-                    <!-- Shop Card 3 -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden hover-lift flex flex-col">
-                        <div class="h-48 bg-zinc-200 w-full relative">
-                            <div class="absolute inset-0 bg-primary-custom/20"></div>
-                            <div class="absolute top-4 right-4 bg-white px-2 py-1 rounded-full text-xs font-bold text-zinc-700 shadow flex items-center gap-1">
-                                <flux:icon.star class="size-3 text-yellow-500" /> 5.0
-                            </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-hidden hover-lift p-6">
+                        <div class="w-14 h-14 rounded-2xl bg-primary-custom/10 flex items-center justify-center mb-5">
+                            <svg class="w-7 h-7 text-primary-custom" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
                         </div>
-                        <div class="p-6 flex-1 flex flex-col">
-                            <h3 class="text-xl font-bold text-zinc-900 mb-1">Davao Suits & Gowns</h3>
-                            <p class="text-sm text-zinc-500 flex items-center gap-1 mb-4"><flux:icon.map-pin class="size-4" /> Toril, Davao City</p>
-                            <div class="flex flex-wrap gap-2 mb-6">
-                                <span class="px-2 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-md font-medium">Wedding Gowns</span>
-                                <span class="px-2 py-1 bg-zinc-100 text-zinc-600 text-xs rounded-md font-medium">Prom Dresses</span>
-                            </div>
-                            <div class="mt-auto flex items-center justify-between">
-                                <div class="text-sm">Starts at <span class="font-bold text-primary-custom">₱8,500</span></div>
-                                <a href="{{ route('register') }}" class="text-sm font-bold text-primary-custom hover:text-secondary-custom transition-colors">View Shop →</a>
-                            </div>
-                        </div>
+                        <h3 class="text-xl font-bold text-zinc-900 mb-2">Fitting Appointments</h3>
+                        <p class="text-zinc-600 text-sm">Book consultations, fittings, and pickup appointments at your convenience through our online scheduler.</p>
                     </div>
-                </div>
-                
-                <div class="mt-12 text-center">
-                    <a href="{{ route('register') }}" class="inline-block px-6 py-3 rounded-full border border-zinc-300 text-zinc-700 font-bold hover:bg-zinc-50 transition-colors">View All 100+ Shops</a>
                 </div>
             </div>
         </section>
 
-        <!-- 5. How TahiConnect Works -->
-        <section id="how-it-works" class="py-24 bg-white">
+        <!-- 5. How It Works -->
+        <section id="how-it-works" class="py-20 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-16">
                     <h2 class="text-3xl md:text-4xl font-bold text-zinc-900 mb-4">How TahiConnect Works</h2>
@@ -315,8 +267,8 @@
                         <div class="w-24 h-24 mx-auto bg-cream rounded-full border-4 border-white shadow-xl flex items-center justify-center mb-6">
                             <flux:icon.magnifying-glass class="size-10 text-primary-custom" />
                         </div>
-                        <h3 class="text-xl font-bold text-zinc-900 mb-2">1. Browse Shops</h3>
-                        <p class="text-zinc-600">Find tailoring services based on location, ratings, and specialties in your area.</p>
+                        <h3 class="text-xl font-bold text-zinc-900 mb-2">1. Browse Our Catalog</h3>
+                        <p class="text-zinc-600">View available garment types, ready-to-wear items, and fabric options.</p>
                     </div>
                     
                     <!-- Step 2 -->
@@ -407,7 +359,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-16">
                     <h2 class="text-3xl md:text-4xl font-bold text-zinc-900 mb-4">A Complete Tailoring Ecosystem</h2>
-                    <p class="text-lg text-zinc-600">Built for both customers looking for quality and shops looking to scale.</p>
+                    <p class="text-lg text-zinc-600">Everything you need to manage your tailoring business and serve customers well.</p>
                 </div>
                 
                 <div class="grid md:grid-cols-2 gap-16">
@@ -424,8 +376,8 @@
                             <div class="flex gap-4 p-4 rounded-2xl hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-zinc-200">
                                 <div class="mt-1 text-primary-custom"><flux:icon.magnifying-glass class="size-6" /></div>
                                 <div>
-                                    <h4 class="font-bold text-zinc-900 mb-1">Find Trusted Tailors</h4>
-                                    <p class="text-zinc-600 text-sm">Discover verified shops with real reviews and transparent pricing.</p>
+                                    <h4 class="font-bold text-zinc-900 mb-1">Browse Our Catalog</h4>
+                                    <p class="text-zinc-600 text-sm">View available garment types, ready-to-wear items, and fabric selections.</p>
                                 </div>
                             </div>
                             <div class="flex gap-4 p-4 rounded-2xl hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-zinc-200">
@@ -496,11 +448,11 @@
             </div>
         </section>
 
-        <!-- 8. Benefits for Tailoring Shops (Split Section) -->
+        <!-- 8. Why Choose Us (Split Section) -->
         <section class="py-24 bg-primary-custom text-white overflow-hidden">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-                    
+
                     <div class="relative order-2 lg:order-1 mt-16 lg:mt-0">
                         <!-- Dashboard Mockup -->
                         <div class="bg-zinc-100 rounded-xl p-2 shadow-2xl transform -rotate-2 hover:rotate-0 transition-all duration-500">
@@ -532,37 +484,37 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="order-1 lg:order-2">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-6">Grow Your Tailoring Business Digitally</h2>
+                        <h2 class="text-3xl md:text-4xl font-bold mb-6">Powerful Tools for Your Tailoring Business</h2>
                         <p class="text-lg text-primary-100 mb-8">
-                            Modernize your shop operations. TahiConnect provides all the tools you need to manage orders, reach a broader audience in Davao, and increase customer satisfaction.
+                            Modernize your operations with a complete management system — from order intake to delivery — all in one place.
                         </p>
-                        
+
                         <div class="space-y-5 mb-10">
                             <div class="flex items-center gap-4">
                                 <div class="bg-white/10 p-2 rounded-lg"><flux:icon.arrow-trending-up class="size-6" /></div>
-                                <span class="font-medium">Reach more customers online</span>
+                                <span class="font-medium">Complete order management dashboard</span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="bg-white/10 p-2 rounded-lg"><flux:icon.cpu-chip class="size-6" /></div>
-                                <span class="font-medium">Manage orders efficiently on one dashboard</span>
+                                <span class="font-medium">Staff assignment and workload tracking</span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="bg-white/10 p-2 rounded-lg"><flux:icon.document-minus class="size-6" /></div>
-                                <span class="font-medium">Reduce manual paperwork and lost measurements</span>
+                                <span class="font-medium">Digital measurements — no more lost records</span>
                             </div>
                             <div class="flex items-center gap-4">
                                 <div class="bg-white/10 p-2 rounded-lg"><flux:icon.face-smile class="size-6" /></div>
-                                <span class="font-medium">Improve customer satisfaction with tracking</span>
+                                <span class="font-medium">Customer satisfaction through real-time tracking</span>
                             </div>
                         </div>
-                        
-                        <a href="{{ route('register') }}?type=shop" class="inline-block px-8 py-4 rounded-full bg-white text-primary-custom font-bold text-lg hover:bg-cream transition-all shadow-lg">
-                            Register Your Shop
+
+                        <a href="{{ route('register') }}" class="inline-block px-8 py-4 rounded-full bg-white text-primary-custom font-bold text-lg hover:bg-cream transition-all shadow-lg">
+                            Get Started Today
                         </a>
                     </div>
-                    
+
                 </div>
             </div>
         </section>
@@ -691,7 +643,7 @@
                         </button>
                         <div x-show="activeAccordion === 1" x-collapse x-cloak>
                             <div class="p-6 pt-0 text-zinc-600 bg-white">
-                                TahiConnect is a marketplace that connects you with top tailoring shops in Davao City. You register an account, fill in your body measurements once, and then you can browse shops, book appointments, and order custom garments online.
+                                TahiConnect is a tailoring management system that lets you register an account, save your body measurements, book appointments, and order custom garments directly from the shop — all with real-time order tracking.
                             </div>
                         </div>
                     </div>
@@ -703,7 +655,7 @@
                         </button>
                         <div x-show="activeAccordion === 2" x-collapse x-cloak>
                             <div class="p-6 pt-0 text-zinc-600 bg-white">
-                                After logging in, go to the "Browse Shops" section. Find a shop you like, view their profile, and click "Book Appointment". You can select an available time slot for a fitting or consultation.
+                                After logging in, go to "Book Appointment" in your dashboard. Choose your preferred appointment type and time slot, and we'll confirm your booking shortly.
                             </div>
                         </div>
                     </div>
@@ -722,12 +674,12 @@
                     <!-- FAQ 4 -->
                     <div class="border border-zinc-200 rounded-2xl overflow-hidden">
                         <button @click="activeAccordion = activeAccordion === 4 ? null : 4" class="w-full flex justify-between items-center p-6 bg-white hover:bg-cream transition-colors text-left">
-                            <span class="font-bold text-zinc-900">How can shops register?</span>
+                            <span class="font-bold text-zinc-900">How do I manage my account?</span>
                             <flux:icon.chevron-down class="size-5 text-zinc-500 transition-transform" x-bind:class="activeAccordion === 4 ? 'rotate-180' : ''" />
                         </button>
                         <div x-show="activeAccordion === 4" x-collapse x-cloak>
                             <div class="p-6 pt-0 text-zinc-600 bg-white">
-                                Tailoring shop owners can click "Register Your Shop" on the homepage. You'll create an owner account and set up your shop profile, including location, specialties, and operating hours. Our admin team will verify your shop before it goes live.
+                                After registering, go to Settings → Profile to update your name, contact number, and address. Shop owners and staff can manage business settings from the Shop Settings page in their dashboard.
                             </div>
                         </div>
                     </div>
@@ -738,16 +690,16 @@
         <!-- 12. Final Call-To-Action -->
         <section class="py-24 bg-secondary-custom text-zinc-900 text-center px-4">
             <div class="max-w-4xl mx-auto">
-                <h2 class="text-4xl md:text-5xl font-extrabold mb-6">Join the Future of Tailoring Services</h2>
+                <h2 class="text-4xl md:text-5xl font-extrabold mb-6">Experience Modern Tailoring</h2>
                 <p class="text-xl opacity-90 mb-10 max-w-2xl mx-auto font-medium">
-                    Whether you're a customer looking for quality tailoring or a shop owner ready to grow your business, TahiConnect helps you connect, manage, and succeed.
+                    Register as a customer to book appointments, place orders, and track your garments — or sign in to your account to get started.
                 </p>
                 <div class="flex flex-col sm:flex-row justify-center gap-4">
                     <a href="{{ route('register') }}" class="px-8 py-4 rounded-full bg-zinc-900 text-white font-bold text-lg hover:bg-black transition-colors shadow-xl">
-                        Find a Tailor
+                        Create Account
                     </a>
-                    <a href="{{ route('register') }}?type=shop" class="px-8 py-4 rounded-full bg-white text-zinc-900 font-bold text-lg hover:bg-cream transition-colors shadow-xl">
-                        Register Your Shop
+                    <a href="{{ route('login') }}" class="px-8 py-4 rounded-full bg-white text-zinc-900 font-bold text-lg hover:bg-cream transition-colors shadow-xl">
+                        Sign In
                     </a>
                 </div>
             </div>
@@ -767,13 +719,13 @@
                         <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
                     </ul>
                 </div>
-                <!-- Marketplace -->
+                <!-- Services -->
                 <div>
-                    <h3 class="text-white font-bold mb-4 font-heading">Marketplace</h3>
+                    <h3 class="text-white font-bold mb-4 font-heading">Services</h3>
                     <ul class="space-y-3 text-sm">
-                        <li><a href="#" class="hover:text-white transition-colors">Browse Shops</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Categories</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Locations</a></li>
+                        <li><a href="{{ route('register') }}" class="hover:text-white transition-colors">Custom Garments</a></li>
+                        <li><a href="{{ route('register') }}" class="hover:text-white transition-colors">Ready-to-Wear</a></li>
+                        <li><a href="{{ route('register') }}" class="hover:text-white transition-colors">Book Appointment</a></li>
                     </ul>
                 </div>
                 <!-- Support -->

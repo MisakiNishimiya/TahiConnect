@@ -403,8 +403,8 @@ new #[Layout('components.layouts.app')] class extends Component {
                 title="No recent orders"
                 description="You haven't placed any orders yet. Start by browsing our shops!"
                 :actions="[
-                    ['type' => 'primary', 'label' => 'Browse Shops', 'onclick' => 'window.location.href=\"' . route('customer.shops') . '\"'],
-                    ['type' => 'secondary', 'label' => 'Create Order', 'onclick' => 'window.location.href=\"' . route('customer.orders') . '\"']
+                    ['type' => 'primary', 'label' => 'Place Your First Order', 'onclick' => 'window.location.href=\"' . route('customer.orders') . '\"'],
+                    ['type' => 'secondary', 'label' => 'View Catalog', 'onclick' => 'window.location.href=\"' . route('customer.catalog') . '\"']
                 ]"
             />
         @endif

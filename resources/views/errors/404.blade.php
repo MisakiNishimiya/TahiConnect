@@ -49,7 +49,7 @@
         <div class="flex flex-wrap gap-2 justify-center">
             @auth
                 <a href="{{ route('customer.dashboard') }}" class="px-4 py-2 text-sm text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-xl hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors font-medium">Dashboard</a>
-                <a href="{{ route('customer.shops') }}" class="px-4 py-2 text-sm text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors font-medium">Find Tailors</a>
+                <a href="{{ route('customer.catalog') }}" class="px-4 py-2 text-sm text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors font-medium">Our Catalog</a>
                 <a href="{{ route('customer.orders') }}" class="px-4 py-2 text-sm text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors font-medium">My Orders</a>
             @else
                 <a href="{{ route('login') }}" class="px-4 py-2 text-sm text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20 rounded-xl hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors font-medium">Sign In</a>

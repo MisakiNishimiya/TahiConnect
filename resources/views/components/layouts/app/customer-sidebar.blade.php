@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
+        <script>if(!localStorage.getItem('flux-appearance')){localStorage.setItem('flux-appearance','light');}</script>
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-cream-50 dark:bg-zinc-800 bg-mesh-primary">
@@ -25,18 +26,25 @@
         <flux:sidebar sticky stashable class="border-r border-primary-100 bg-white dark:border-zinc-700 dark:bg-zinc-900">
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
-            <a href="{{ route('customer.dashboard') }}" class="mr-5 flex items-center space-x-2" wire:navigate>
-                <x-app-logo class="size-8" href="#"></x-app-logo>
+            <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2 px-2 pb-4 pt-2" wire:navigate>
+                <div class="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary-500 shrink-0">
+                    <x-app-logo-icon class="size-5 fill-current text-white" />
+                </div>
+                <div>
+                    <span class="font-bold text-lg text-primary-600 dark:text-primary-400" style="font-family: 'Poppins';">TahiConnect</span>
+                    <p class="text-[10px] text-zinc-500 font-medium uppercase tracking-wider leading-none mt-0.5">Customer</p>
+                </div>
             </a>
 
             <flux:navlist variant="outline">
                 <flux:navlist.group heading="Menu" class="grid">
                     <flux:navlist.item icon="home" :href="route('customer.dashboard')" :current="request()->routeIs('customer.dashboard')" wire:navigate>Dashboard</flux:navlist.item>
-                    <flux:navlist.item icon="building-storefront" :href="route('customer.shops')" :current="request()->routeIs('customer.shops')" wire:navigate>Find a Tailor</flux:navlist.item>
+                    <flux:navlist.item icon="building-storefront" :href="route('customer.catalog')" :current="request()->routeIs('customer.catalog')" wire:navigate>Our Catalog</flux:navlist.item>
+                    <flux:navlist.item icon="banknotes" :href="route('customer.rates')" :current="request()->routeIs('customer.rates')" wire:navigate>Rates & Pricing</flux:navlist.item>
                     <flux:navlist.item icon="chart-bar" :href="route('customer.measurements')" :current="request()->routeIs('customer.measurements')" wire:navigate>My Measurements</flux:navlist.item>
                     <flux:navlist.item icon="sparkles" :href="route('customer.virtual-tryon')" :current="request()->routeIs('customer.virtual-tryon')" wire:navigate>Virtual Try-On</flux:navlist.item>
-                    <flux:navlist.item icon="calendar" :href="route('customer.appointments')" :current="request()->routeIs('customer.appointments')" wire:navigate>Appointments</flux:navlist.item>
-                    <flux:navlist.item icon="shopping-bag" :href="route('customer.orders')" :current="request()->routeIs('customer.orders')" wire:navigate>Orders</flux:navlist.item>
+                    <flux:navlist.item icon="calendar-days" :href="route('customer.appointments')" :current="request()->routeIs('customer.appointments')" wire:navigate>My Appointments</flux:navlist.item>
+                    <flux:navlist.item icon="shopping-bag" :href="route('customer.orders')" :current="request()->routeIs('customer.orders')" wire:navigate>My Orders</flux:navlist.item>
                     <flux:navlist.item icon="truck" :href="route('customer.tracking')" :current="request()->routeIs('customer.tracking')" wire:navigate>Order Tracking</flux:navlist.item>
                     <flux:navlist.item icon="credit-card" :href="route('customer.payments')" :current="request()->routeIs('customer.payments')" wire:navigate>Payments</flux:navlist.item>
                     <flux:navlist.item :href="route('customer.notifications')" :current="request()->routeIs('customer.notifications')" wire:navigate>
@@ -149,14 +157,14 @@
                     @endif
                 </a>
 
-                <!-- Shops -->
-                <a href="{{ route('customer.shops') }}" wire:navigate
-                    class="flex flex-col items-center justify-center py-3 px-1 transition-colors {{ request()->routeIs('customer.shops*') ? 'text-primary-600 dark:text-primary-400' : 'text-zinc-500 dark:text-zinc-400 hover:text-primary-500' }}">
-                    <svg class="w-5 h-5 mb-1" fill="{{ request()->routeIs('customer.shops*') ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <!-- Catalog -->
+                <a href="{{ route('customer.catalog') }}" wire:navigate
+                    class="flex flex-col items-center justify-center py-3 px-1 transition-colors {{ request()->routeIs('customer.catalog') || request()->routeIs('customer.rates') ? 'text-primary-600 dark:text-primary-400' : 'text-zinc-500 dark:text-zinc-400 hover:text-primary-500' }}">
+                    <svg class="w-5 h-5 mb-1" fill="{{ request()->routeIs('customer.catalog') || request()->routeIs('customer.rates') ? 'currentColor' : 'none' }}" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349M3.75 21V9.349m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614"/>
                     </svg>
-                    <span class="text-[10px] font-medium leading-none">Shops</span>
-                    @if(request()->routeIs('customer.shops*'))
+                    <span class="text-[10px] font-medium leading-none">Catalog</span>
+                    @if(request()->routeIs('customer.catalog') || request()->routeIs('customer.rates'))
                         <div class="w-1 h-1 bg-primary-500 rounded-full mt-1"></div>
                     @endif
                 </a>

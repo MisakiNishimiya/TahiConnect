@@ -13,60 +13,28 @@ new #[Layout('components.layouts.app')] class extends Component {
     use WithFileUploads;
 
     public string $activeTab = 'all';
-    
+
     // Form State
     public int $currentStep = 1;
-    public string $shop_id = '';
     public string $garment_type_id = '';
     public string $fabric_preference = '';
     public int $quantity = 1;
     public string $preferred_completion_date = '';
     public string $special_instructions = '';
-    
+
     // Design Reference State
     public $reference_upload;
     public string $selected_ai_preview = '';
-    
+
     public bool $showModal = false;
 
-    public function updatedShopId($value)
-    {
-        $this->garment_type_id = '';
-        $this->fabric_preference = '';
-    }
-
-    public function nextStep()
+    public function nextStep(): void
     {
         if ($this->currentStep === 1) {
             $this->validate([
-                'shop_id' => 'required|exists:shops,id',
-                'garment_type_id' => [
-                    'required',
-                    'exists:garment_types,id',
-                    function ($attribute, $value, $fail) {
-                        if ($value && $this->shop_id) {
-                            $garmentType = GarmentType::find($value);
-                            if (!$garmentType || $garmentType->shop_id != $this->shop_id) {
-                                $fail('The selected garment type does not belong to the chosen shop.');
-                            }
-                        }
-                    }
-                ],
-                'fabric_preference' => [
-                    'nullable',
-                    'string',
-                    function ($attribute, $value, $fail) {
-                        if ($value && $this->shop_id) {
-                            $fabricExists = Fabric::where('shop_id', $this->shop_id)
-                                                 ->where('name', $value)
-                                                 ->exists();
-                            if (!$fabricExists) {
-                                $fail('The selected fabric is not available at the chosen shop.');
-                            }
-                        }
-                    }
-                ],
-                'quantity' => 'required|integer|min:1',
+                'garment_type_id'          => 'required|exists:garment_types,id',
+                'fabric_preference'         => 'nullable|string',
+                'quantity'                  => 'required|integer|min:1',
                 'preferred_completion_date' => 'nullable|date|after:today',
             ]);
         } elseif ($this->currentStep === 2) {
@@ -74,50 +42,35 @@ new #[Layout('components.layouts.app')] class extends Component {
                 'reference_upload' => 'nullable|image|max:10240',
             ]);
         }
-        
+
         if ($this->currentStep < 3) {
             $this->currentStep++;
         }
     }
 
-    public function previousStep()
+    public function previousStep(): void
     {
         if ($this->currentStep > 1) {
             $this->currentStep--;
         }
     }
-    
-    public function incrementQuantity() { $this->quantity++; }
-    public function decrementQuantity() { if($this->quantity > 1) $this->quantity--; }
+
+    public function incrementQuantity(): void { $this->quantity++; }
+    public function decrementQuantity(): void  { if ($this->quantity > 1) $this->quantity--; }
 
     public function createOrder(): void
     {
-        // Final validation with shop scoping
         $this->validate([
-            'shop_id' => 'required|exists:shops,id',
-            'garment_type_id' => [
-                'required',
-                'exists:garment_types,id',
-                function ($attribute, $value, $fail) {
-                    if ($value && $this->shop_id) {
-                        $garmentType = GarmentType::find($value);
-                        if (!$garmentType || $garmentType->shop_id != $this->shop_id) {
-                            $fail('The selected garment type does not belong to the chosen shop.');
-                        }
-                    }
-                }
-            ],
-            'quantity' => 'required|integer|min:1',
+            'garment_type_id' => 'required|exists:garment_types,id',
+            'quantity'        => 'required|integer|min:1',
         ]);
 
+        $shop = Shop::instance();
+
         $designPath = null;
-        
-        // Handle file upload
         if ($this->reference_upload) {
             $designPath = $this->reference_upload->store('design-references', 'public');
-        } 
-        // Or handle selected AI preview
-        elseif ($this->selected_ai_preview) {
+        } elseif ($this->selected_ai_preview) {
             $tryon = VirtualTryon::find($this->selected_ai_preview);
             if ($tryon && $tryon->user_id === auth()->id()) {
                 $designPath = $tryon->preview_path;
@@ -125,61 +78,67 @@ new #[Layout('components.layouts.app')] class extends Component {
         }
 
         Order::create([
-            'user_id' => auth()->id(),
-            'shop_id' => $this->shop_id,
-            'tracking_number' => 'TC-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
-            'order_type' => 'custom',
-            'garment_type_id' => $this->garment_type_id,
-            'fabric_preference' => $this->fabric_preference,
-            'quantity' => $this->quantity,
-            'special_instructions' => $this->special_instructions,
-            'design_reference_path' => $designPath,
-            'total_amount' => GarmentType::find($this->garment_type_id)->base_price * $this->quantity,
-            'status' => 'pending',
-            'estimated_completion' => $this->preferred_completion_date ?: now()->addDays(21)->format('Y-m-d'),
+            'user_id'                 => auth()->id(),
+            'shop_id'                 => $shop->id,
+            'tracking_number'         => 'TC-'.date('Y').'-'.str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT),
+            'order_type'              => 'custom',
+            'garment_type_id'         => $this->garment_type_id,
+            'fabric_preference'       => $this->fabric_preference,
+            'quantity'                => $this->quantity,
+            'special_instructions'    => $this->special_instructions,
+            'design_reference_path'   => $designPath,
+            'total_amount'            => GarmentType::find($this->garment_type_id)->base_price * $this->quantity,
+            'status'                  => 'pending',
+            'estimated_completion'    => $this->preferred_completion_date ?: now()->addDays(21)->format('Y-m-d'),
         ]);
 
         $this->reset([
-            'currentStep', 'shop_id', 'garment_type_id', 'fabric_preference', 'quantity', 
-            'preferred_completion_date', 'special_instructions', 
-            'reference_upload', 'selected_ai_preview', 'showModal'
+            'currentStep', 'garment_type_id', 'fabric_preference', 'quantity',
+            'preferred_completion_date', 'special_instructions',
+            'reference_upload', 'selected_ai_preview', 'showModal',
         ]);
         session()->flash('message', 'Order placed successfully!');
     }
 
-    public function closeModal()
+    public function closeModal(): void
     {
         $this->showModal = false;
-        $this->reset(['currentStep', 'shop_id', 'garment_type_id', 'fabric_preference', 'quantity', 'preferred_completion_date', 'special_instructions', 'reference_upload', 'selected_ai_preview']);
+        $this->reset([
+            'currentStep', 'garment_type_id', 'fabric_preference', 'quantity',
+            'preferred_completion_date', 'special_instructions',
+            'reference_upload', 'selected_ai_preview',
+        ]);
     }
 
     public function with(): array
     {
-        $query = Order::where('user_id', auth()->id())->with(['garmentType', 'shop', 'preMadeProduct'])->latest();
+        $query = Order::where('user_id', auth()->id())
+            ->with(['garmentType', 'preMadeProduct'])
+            ->latest();
         if ($this->activeTab !== 'all') {
             $query->where('status', $this->activeTab);
         }
+
+        $uid = auth()->id();
         return [
-            'orders' => $query->get(),
-            'shops' => Shop::where('is_active', true)->select('id', 'name', 'city', 'specialties')->get(),
-            'garmentTypes' => $this->shop_id ? GarmentType::where('shop_id', $this->shop_id)->select('id', 'name', 'base_price')->get() : collect(),
-            'fabrics' => $this->shop_id ? Fabric::where('shop_id', $this->shop_id)->where('in_stock', true)->select('id', 'name', 'material')->get() : collect(),
-            'aiPreviews' => VirtualTryon::where('user_id', auth()->id())
-                                ->where('status', 'completed')
-                                ->whereNotNull('preview_path')
-                                ->latest()
-                                ->get(),
-            'statusCounts' => [
-                'all' => Order::where('user_id', auth()->id())->count(),
-                'pending' => Order::where('user_id', auth()->id())->where('status', 'pending')->count(),
-                'in_production' => Order::where('user_id', auth()->id())->where('status', 'in_production')->count(),
-                'fitting_scheduled' => Order::where('user_id', auth()->id())->where('status', 'fitting_scheduled')->count(),
-                'completed' => Order::where('user_id', auth()->id())->where('status', 'completed')->count(),
+            'orders'            => $query->get(),
+            'garmentTypes'      => GarmentType::select('id', 'name', 'base_price')->get(),
+            'fabrics'           => Fabric::where('in_stock', true)->select('id', 'name', 'material')->get(),
+            'aiPreviews'        => VirtualTryon::where('user_id', $uid)
+                                    ->where('status', 'completed')
+                                    ->whereNotNull('preview_path')
+                                    ->latest()->get(),
+            'statusCounts'      => [
+                'all'               => Order::where('user_id', $uid)->count(),
+                'pending'           => Order::where('user_id', $uid)->where('status', 'pending')->count(),
+                'in_production'     => Order::where('user_id', $uid)->where('status', 'in_production')->count(),
+                'fitting_scheduled' => Order::where('user_id', $uid)->where('status', 'fitting_scheduled')->count(),
+                'completed'         => Order::where('user_id', $uid)->where('status', 'completed')->count(),
             ],
-            // For summary view
-            'selectedShop' => $this->shop_id ? Shop::find($this->shop_id) : null,
-            'selectedGarment' => $this->garment_type_id ? GarmentType::find($this->garment_type_id) : null,
-            'selectedPreviewUrl' => $this->selected_ai_preview ? VirtualTryon::find($this->selected_ai_preview)?->preview_path : null,
+            'selectedGarment'   => $this->garment_type_id ? GarmentType::find($this->garment_type_id) : null,
+            'selectedPreviewUrl' => $this->selected_ai_preview
+                                    ? VirtualTryon::find($this->selected_ai_preview)?->preview_path
+                                    : null,
         ];
     }
 }; ?>
@@ -429,33 +388,17 @@ new #[Layout('components.layouts.app')] class extends Component {
                 @if($currentStep === 1)
                 <div class="bg-white dark:bg-zinc-800 rounded-2xl border border-zinc-200 dark:border-zinc-700 p-8 shadow-sm">
                     <h3 class="text-[18px] font-semibold text-zinc-900 dark:text-white mb-6">Garment Specifications</h3>
-                    
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                        
-                        <!-- Tailoring Shop -->
-                        <div class="md:col-span-2">
-                            <label class="block text-[14px] font-medium text-zinc-700 dark:text-zinc-300 mb-2">Tailoring Shop <span class="text-red-500">*</span></label>
-                            <select wire:model.live="shop_id" class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer">
-                                <option value="">Select a tailor shop...</option>
-                                @foreach($shops as $shop)
-                                    <option value="{{ $shop->id }}">{{ $shop->name }} ({{ $shop->city }}) — Specialties: {{ implode(', ', $shop->specialties ?? []) }}</option>
-                                @endforeach
-                            </select>
-                            @error('shop_id') <p class="text-[12px] text-red-500 mt-1">{{ $message }}</p> @enderror
-                        </div>
 
                         <!-- Garment Type -->
-                        <div>
+                        <div class="md:col-span-2">
                             <label class="block text-[14px] font-medium text-zinc-700 dark:text-zinc-300 mb-2">Garment Type <span class="text-red-500">*</span></label>
-                            <select wire:model="garment_type_id" {{ empty($shop_id) ? 'disabled' : '' }} class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                                @if(empty($shop_id))
-                                    <option value="">Please select a shop first...</option>
-                                @else
-                                    <option value="">Select garment type...</option>
-                                    @foreach($garmentTypes as $gt)
-                                        <option value="{{ $gt->id }}">{{ $gt->name }} — ₱{{ number_format($gt->base_price, 2) }}</option>
-                                    @endforeach
-                                @endif
+                            <select wire:model="garment_type_id" class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer">
+                                <option value="">Select garment type...</option>
+                                @foreach($garmentTypes as $gt)
+                                    <option value="{{ $gt->id }}">{{ $gt->name }} — ₱{{ number_format($gt->base_price, 2) }}</option>
+                                @endforeach
                             </select>
                             @error('garment_type_id') <p class="text-[12px] text-red-500 mt-1">{{ $message }}</p> @enderror
                         </div>
@@ -463,15 +406,11 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <!-- Fabric Preference -->
                         <div>
                             <label class="block text-[14px] font-medium text-zinc-700 dark:text-zinc-300 mb-2">Fabric Preference</label>
-                            <select wire:model="fabric_preference" {{ empty($shop_id) ? 'disabled' : '' }} class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                                @if(empty($shop_id))
-                                    <option value="">Please select a shop first...</option>
-                                @else
-                                    <option value="">Select fabric (optional)...</option>
-                                    @foreach($fabrics as $fabric)
-                                        <option value="{{ $fabric->name }}">{{ $fabric->name }} ({{ $fabric->material }})</option>
-                                    @endforeach
-                                @endif
+                            <select wire:model="fabric_preference" class="w-full px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-xl text-[14px] focus:ring-2 focus:ring-zinc-900 dark:focus:ring-white focus:border-zinc-900 transition-shadow appearance-none cursor-pointer">
+                                <option value="">Select fabric (optional)...</option>
+                                @foreach($fabrics as $fabric)
+                                    <option value="{{ $fabric->name }}">{{ $fabric->name }} ({{ $fabric->material }})</option>
+                                @endforeach
                             </select>
                         </div>
 

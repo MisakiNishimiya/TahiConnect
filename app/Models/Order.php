@@ -26,6 +26,8 @@ class Order extends Model
         ];
     }
 
+    // ── Relationships ─────────────────────────────────────────────────────────
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -66,27 +68,31 @@ class Order extends Model
         return $this->hasMany(DesignReference::class);
     }
 
+    // ── Status helpers ────────────────────────────────────────────────────────
+
     /**
      * Get the status index for progress tracking.
-     * Different flows for custom vs pre-made orders.
      */
     public function getStatusIndexAttribute(): int
     {
         if ($this->order_type === 'pre_made') {
-            // Simplified flow for pre-made products: pending → in_production → ready_for_pickup → completed → released
             $statuses = [
-                'pending' => 0,
-                'in_production' => 1,
+                'pending'          => 0,
+                'in_production'    => 1,
                 'ready_for_pickup' => 2,
-                'completed' => 3,
-                'released' => 4,
+                'completed'        => 3,
+                'released'         => 4,
             ];
         } else {
-            // Full custom tailoring flow
             $statuses = [
-                'pending' => 0, 'measurements_verified' => 1, 'in_production' => 2,
-                'fitting_scheduled' => 3, 'final_adjustment' => 4, 'ready_for_pickup' => 5,
-                'completed' => 6, 'released' => 7,
+                'pending'               => 0,
+                'measurements_verified' => 1,
+                'in_production'         => 2,
+                'fitting_scheduled'     => 3,
+                'final_adjustment'      => 4,
+                'ready_for_pickup'      => 5,
+                'completed'             => 6,
+                'released'              => 7,
             ];
         }
         return $statuses[$this->status] ?? 0;
@@ -100,17 +106,11 @@ class Order extends Model
         return $this->order_type === 'pre_made' ? 4 : 7;
     }
 
-    /**
-     * Check if the order requires measurements.
-     */
     public function requiresMeasurements(): bool
     {
         return $this->order_type === 'custom';
     }
 
-    /**
-     * Check if the order requires fittings.
-     */
     public function requiresFittings(): bool
     {
         return $this->order_type === 'custom';
@@ -123,22 +123,22 @@ class Order extends Model
     {
         if ($this->order_type === 'pre_made') {
             return match($this->status) {
-                'pending' => ['in_production'],
-                'in_production' => ['ready_for_pickup'],
+                'pending'          => ['in_production'],
+                'in_production'    => ['ready_for_pickup'],
                 'ready_for_pickup' => ['completed'],
-                'completed' => ['released'],
-                default => []
+                'completed'        => ['released'],
+                default            => []
             };
         } else {
             return match($this->status) {
-                'pending' => ['measurements_verified'],
+                'pending'               => ['measurements_verified'],
                 'measurements_verified' => ['in_production'],
-                'in_production' => ['fitting_scheduled'],
-                'fitting_scheduled' => ['final_adjustment'],
-                'final_adjustment' => ['ready_for_pickup'],
-                'ready_for_pickup' => ['completed'],
-                'completed' => ['released'],
-                default => []
+                'in_production'         => ['fitting_scheduled'],
+                'fitting_scheduled'     => ['final_adjustment'],
+                'final_adjustment'      => ['ready_for_pickup'],
+                'ready_for_pickup'      => ['completed'],
+                'completed'             => ['released'],
+                default                 => []
             };
         }
     }

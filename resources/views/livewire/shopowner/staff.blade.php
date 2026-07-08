@@ -7,18 +7,41 @@ use App\Models\User;
 
 new #[Layout('components.layouts.app')] class extends Component {
     use WithPagination;
-    public string $search = '';
+    public string $search       = '';
+    public bool   $showAddModal = false;
+
+    // Add staff form fields (UI-only)
+    public string $s_name     = '';
+    public string $s_email    = '';
+    public string $s_phone    = '';
+
+    public function openAdd(): void
+    {
+        $this->reset(['s_name', 's_email', 's_phone']);
+        $this->showAddModal = true;
+    }
+
+    public function saveStaff(): void
+    {
+        $this->validate([
+            's_name'  => 'required|string|max:150',
+            's_email' => 'required|email|max:255',
+        ]);
+        // UI-only — backend will create user with role tailor_staff and send invite email
+        $this->showAddModal = false;
+        session()->flash('message', 'Staff member added. (UI-only — backend pending)');
+    }
 
     public function with(): array
     {
-        $shopId = auth()->user()->shop_id;
         return [
-            'staffMembers' => User::where('shop_id', $shopId)->where('role', 'tailor_staff')
+            'staffMembers' => User::where('role', 'tailor_staff')
                 ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")->orWhere('email', 'like', "%{$this->search}%"))
                 ->paginate(12),
-            'totalStaff' => User::where('shop_id', $shopId)->where('role', 'tailor_staff')->count(),
+            'totalStaff' => User::where('role', 'tailor_staff')->count(),
         ];
     }
+
     public function updatedSearch() { $this->resetPage(); }
 }; ?>
 
@@ -29,11 +52,16 @@ new #[Layout('components.layouts.app')] class extends Component {
             <h1 class="text-3xl font-bold text-primary-600 dark:text-primary-400" style="font-family: 'Poppins';">Shop Staff</h1>
             <p class="text-zinc-500 mt-1">Manage your tailors and shop assistants</p>
         </div>
-        <button class="px-5 py-2.5 text-sm font-medium bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary-500/25 click-feedback flex items-center gap-2">
+        <button wire:click="openAdd"
+            class="px-5 py-2.5 text-sm font-medium bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-primary-500/25 click-feedback flex items-center gap-2">
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Add Staff Member
         </button>
     </div>
+
+    @if(session()->has('message'))
+        <x-notification-toast type="success" title="Done!" message="{{ session('message') }}" :dismissible="true" />
+    @endif
 
     <!-- Search & Stats -->
     <div class="flex flex-col sm:flex-row gap-4">
@@ -97,12 +125,60 @@ new #[Layout('components.layouts.app')] class extends Component {
             <div class="col-span-full">
                 <x-enhanced-empty-state icon="folder" title="No staff members yet"
                     description="Add your first staff member to start delegating orders."
-                    :actions="[['type'=>'primary','label'=>'Add Staff Member','onclick'=>'']]" />
+                    :actions="[['type'=>'primary','label'=>'Add Staff Member','onclick'=>'\$wire.openAdd()']]" />
             </div>
         @endforelse
     </div>
 
     @if($staffMembers->hasPages())
         <div class="flex justify-center">{{ $staffMembers->links() }}</div>
+    @endif
+
+    <!-- Add Staff Modal -->
+    @if($showAddModal)
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md border border-zinc-200" @click.stop>
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-zinc-900">Add Staff Member</h3>
+                    <button wire:click="$set('showAddModal', false)" class="p-2 text-zinc-400 hover:bg-zinc-100 rounded-full transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <!-- UI-only banner -->
+                <div class="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
+                    <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <p class="text-xs text-amber-700"><strong>UI preview only.</strong> Backend implementation pending — staff accounts will be created with a temporary password and receive an email invite.</p>
+                </div>
+
+                <form wire:submit="saveStaff" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-700 mb-1.5">Full Name <span class="text-red-500">*</span></label>
+                        <input wire:model="s_name" placeholder="e.g. Maria Santos"
+                            class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500" />
+                        @error('s_name') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-700 mb-1.5">Email Address <span class="text-red-500">*</span></label>
+                        <input wire:model="s_email" type="email" placeholder="staff@example.com"
+                            class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500" />
+                        @error('s_email') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-700 mb-1.5">Contact Number <span class="text-zinc-400 font-normal">(optional)</span></label>
+                        <input wire:model="s_phone" placeholder="e.g. 09XX-XXX-XXXX"
+                            class="w-full px-4 py-2.5 border border-zinc-200 rounded-xl text-sm focus:ring-2 focus:ring-primary-500" />
+                    </div>
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" wire:click="$set('showAddModal', false)"
+                            class="flex-1 px-4 py-2.5 text-sm font-medium text-zinc-600 bg-zinc-100 hover:bg-zinc-200 rounded-xl transition-colors">Cancel</button>
+                        <button type="submit"
+                            class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-xl transition-colors">Add Staff</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
     @endif
 </div>

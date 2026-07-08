@@ -72,7 +72,7 @@ new #[Layout('components.layouts.app')] class extends Component {
         </div>
         <div class="flex gap-3">
             <button 
-                onclick="window.location.href='{{ route('customer.shops') }}'"
+                onclick="window.location.href='{{ route('customer.book') }}'"
                 class="px-6 py-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl hover:shadow-primary-500/25 click-feedback flex items-center gap-2"
             >
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -253,10 +253,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                 <x-enhanced-empty-state
                     icon="calendar"
                     title="No upcoming appointments"
-                    description="You don't have any fittings or consultations scheduled. Book your first appointment with a trusted tailor!"
+                    description="You don't have any fittings or consultations scheduled. Book your first appointment!"
                     :actions="[
-                        ['type' => 'primary', 'label' => 'Find a Tailor', 'onclick' => 'window.location.href=\"' . route('customer.shops') . '\"'],
-                        ['type' => 'secondary', 'label' => 'Browse Services', 'onclick' => 'window.location.href=\"' . route('customer.shops') . '\"']
+                        ['type' => 'primary', 'label' => 'Book Appointment', 'onclick' => 'window.location.href=\"' . route('customer.book') . '\"'],
+                        ['type' => 'secondary', 'label' => 'View Catalog', 'onclick' => 'window.location.href=\"' . route('customer.catalog') . '\"']
                     ]"
                 />
             @endforelse
@@ -316,7 +316,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     title="No appointment history"
                     description="You haven't had any appointments yet. Your completed and cancelled appointments will appear here."
                     :actions="[
-                        ['type' => 'primary', 'label' => 'Book First Appointment', 'onclick' => 'window.location.href=\"' . route('customer.shops') . '\"']
+                        ['type' => 'primary', 'label' => 'Book First Appointment', 'onclick' => 'window.location.href=\"' . route('customer.book') . '\"']
                     ]"
                 />
             @endforelse
@@ -327,7 +327,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     <x-floating-action-button 
         icon="plus" 
         tooltip="Book New Appointment"
-        onclick="window.location.href='{{ route('customer.shops') }}'"
+        onclick="window.location.href='{{ route('customer.book') }}'"
     />
 
     <!-- Cancel Confirmation Modal -->

@@ -12,20 +12,18 @@ class Shop extends Model
     protected $fillable = [
         'name', 'slug', 'description', 'address', 'barangay', 'city', 'province',
         'latitude', 'longitude', 'contact_number', 'email', 'logo_url', 'cover_photo_url',
-        'operating_hours', 'specialties', 'rating', 'total_reviews',
-        'is_verified', 'is_active', 'is_featured', 'commission_rate',
+        'operating_hours', 'specialties', 'is_verified', 'is_active',
     ];
 
     protected function casts(): array
     {
         return [
             'operating_hours' => 'array',
-            'specialties' => 'array',
-            'is_verified' => 'boolean',
-            'is_active' => 'boolean',
-            'is_featured' => 'boolean',
-            'latitude' => 'decimal:7',
-            'longitude' => 'decimal:7',
+            'specialties'     => 'array',
+            'is_verified'     => 'boolean',
+            'is_active'       => 'boolean',
+            'latitude'        => 'decimal:7',
+            'longitude'       => 'decimal:7',
         ];
     }
 
@@ -36,6 +34,14 @@ class Shop extends Model
                 $shop->slug = Str::slug($shop->name);
             }
         });
+    }
+
+    /**
+     * Retrieve the single shop instance for this deployment.
+     */
+    public static function instance(): self
+    {
+        return static::firstOrFail();
     }
 
     // Relationships
@@ -90,14 +96,6 @@ class Shop extends Model
     }
 
     // Helpers
-    public function getStarRatingAttribute(): string
-    {
-        $full = floor($this->rating);
-        $half = ($this->rating - $full) >= 0.5 ? 1 : 0;
-        $empty = 5 - $full - $half;
-        return str_repeat('★', $full) . ($half ? '½' : '') . str_repeat('☆', $empty);
-    }
-
     public function getSpecialtiesListAttribute(): string
     {
         return is_array($this->specialties) ? implode(', ', $this->specialties) : '';

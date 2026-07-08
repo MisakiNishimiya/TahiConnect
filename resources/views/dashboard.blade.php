@@ -1,13 +1,13 @@
 <x-layouts.app>
-    {{-- Redirect to role-based dashboard if somehow landed here --}}
+    {{-- Redirect to role-based dashboard --}}
     @php
         $user = auth()->user();
         if ($user) {
             $route = match($user->role) {
-                'admin' => 'admin.dashboard',
+                'super_admin'  => 'superadmin.dashboard',
+                'shop_owner'   => 'shopowner.dashboard',
                 'tailor_staff' => 'staff.dashboard',
-                'shop_owner' => 'shopowner.dashboard',
-                default => 'customer.dashboard',
+                default        => 'customer.dashboard',
             };
             redirect()->route($route)->send();
         }

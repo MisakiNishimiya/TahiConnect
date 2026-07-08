@@ -12,11 +12,11 @@ class AppointmentObserver
      */
     public function creating(Appointment $appointment): void
     {
-        // Validate staff belongs to the same shop as the appointment
+        // Validate that the assigned user is actually a staff member
         if ($appointment->staff_id) {
             $staff = User::find($appointment->staff_id);
-            if (!$staff || $staff->role !== 'tailor_staff' || $staff->shop_id !== $appointment->shop_id) {
-                throw new \InvalidArgumentException('Staff member must belong to the same shop as the appointment.');
+            if (!$staff || $staff->role !== 'tailor_staff') {
+                throw new \InvalidArgumentException('The assigned user is not a tailor staff member.');
             }
         }
     }
@@ -26,11 +26,10 @@ class AppointmentObserver
      */
     public function updating(Appointment $appointment): void
     {
-        // Validate staff assignment changes
         if ($appointment->isDirty('staff_id') && $appointment->staff_id) {
             $staff = User::find($appointment->staff_id);
-            if (!$staff || $staff->role !== 'tailor_staff' || $staff->shop_id !== $appointment->shop_id) {
-                throw new \InvalidArgumentException('Staff member must belong to the same shop as the appointment.');
+            if (!$staff || $staff->role !== 'tailor_staff') {
+                throw new \InvalidArgumentException('The assigned user is not a tailor staff member.');
             }
         }
     }

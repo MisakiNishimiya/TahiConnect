@@ -93,6 +93,19 @@ new #[Layout('components.layouts.app')] class extends Component {
                             </div>
                             <span class="tc-badge tc-badge-{{ $appt->status }} shrink-0">{{ ucfirst($appt->status) }}</span>
                         </div>
+                        {{-- Adjustment order key callout --}}
+                        @if($appt->type === 'adjustment' && $appt->notes && str_contains($appt->notes, '[Order Key:'))
+                            @php preg_match('/\[Order Key:\s*([^\]]+)\]/', $appt->notes, $m); $oKey = trim($m[1] ?? ''); @endphp
+                            @if($oKey)
+                            <div class="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                                <div>
+                                    <p class="text-xs font-semibold text-amber-800">Adjustment for Order</p>
+                                    <p class="text-xs font-mono font-bold text-amber-700">{{ $oKey }}</p>
+                                </div>
+                            </div>
+                            @endif
+                        @endif
                         <div class="flex gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-700">
                             @if($appt->status === 'pending')
                                 <button wire:click="confirmAppointment({{ $appt->id }})"
@@ -134,6 +147,19 @@ new #[Layout('components.layouts.app')] class extends Component {
                         </div>
                         <span class="tc-badge tc-badge-{{ $appt->status }} shrink-0">{{ ucfirst($appt->status) }}</span>
                     </div>
+                    {{-- Adjustment order key callout --}}
+                    @if($appt->type === 'adjustment' && $appt->notes && str_contains($appt->notes, '[Order Key:'))
+                        @php preg_match('/\[Order Key:\s*([^\]]+)\]/', $appt->notes, $m); $oKey = trim($m[1] ?? ''); @endphp
+                        @if($oKey)
+                        <div class="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+                            <div>
+                                <p class="text-xs font-semibold text-amber-800">Adjustment for Order</p>
+                                <p class="text-xs font-mono font-bold text-amber-700">{{ $oKey }}</p>
+                            </div>
+                        </div>
+                        @endif
+                    @endif
                 </div>
             @empty
                 <x-enhanced-empty-state icon="calendar" title="No upcoming appointments"

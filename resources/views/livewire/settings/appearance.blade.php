@@ -14,7 +14,7 @@ new class extends Component {
             <!-- Theme Selector -->
             <div>
                 <p class="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-4">Color Theme</p>
-                <flux:radio.group x-data variant="segmented" x-model="$flux.appearance" class="w-full sm:w-auto">
+                <flux:radio.group x-data="{ appearance: $flux.appearance || 'light' }" variant="segmented" x-model="$flux.appearance" class="w-full sm:w-auto">
                     <flux:radio value="light" icon="sun">Light</flux:radio>
                     <flux:radio value="dark" icon="moon">Dark</flux:radio>
                     <flux:radio value="system" icon="computer-desktop">System</flux:radio>

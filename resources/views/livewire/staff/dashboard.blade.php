@@ -9,7 +9,6 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function with(): array
     {
         $user = auth()->user();
-        if (!$user->shop_id) abort(403, 'Staff must be assigned to a shop.');
         return [
             'assignedOrders' => Order::where('staff_id', $user->id)->whereNotIn('status', ['completed', 'released'])->count(),
             'todayAppointments' => Appointment::where('staff_id', $user->id)->whereDate('date', today())->count(),

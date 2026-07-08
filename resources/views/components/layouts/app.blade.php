@@ -1,9 +1,9 @@
-@if(auth()->check() && auth()->user()->role === 'admin')
-    <x-layouts.app.admin-sidebar>
+@if(auth()->check() && auth()->user()->role === 'super_admin')
+    <x-layouts.app.superadmin-sidebar>
         <flux:main>
             {{ $slot }}
         </flux:main>
-    </x-layouts.app.admin-sidebar>
+    </x-layouts.app.superadmin-sidebar>
 @elseif(auth()->check() && auth()->user()->role === 'tailor_staff')
     <x-layouts.app.staff-sidebar>
         <flux:main>

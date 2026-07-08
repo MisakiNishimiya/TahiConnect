@@ -219,7 +219,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             @php
                 $tabs = [
                     ['key' => 'all', 'label' => 'All Notifications', 'icon' => 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16', 'color' => 'zinc'],
-                    ['key' => 'unread', 'label' => 'Unread', 'icon' => 'M15 17h5l-5-5 5-5h-5m-6 10v-2a3 3 0 00-3-3H5a3 3 0 00-3 3v2a1 1 0 001 1h6a1 1 0 001-1z', 'color' => 'red'],
+                    ['key' => 'unread', 'label' => 'Unread', 'icon' => 'M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0', 'color' => 'red'],
                     ['key' => 'orders', 'label' => 'Orders', 'icon' => 'M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z', 'color' => 'emerald'],
                     ['key' => 'appointments', 'label' => 'Appointments', 'icon' => 'M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5', 'color' => 'blue'],
                     ['key' => 'payments', 'label' => 'Payments', 'icon' => 'M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z', 'color' => 'amber']
@@ -365,8 +365,8 @@ new #[Layout('components.layouts.app')] class extends Component {
                 title="No notifications yet"
                 description="You'll receive updates about your orders, appointments, and payments here. Stay tuned!"
                 :actions="[
-                    ['type' => 'primary', 'label' => 'Browse Shops', 'onclick' => 'window.location.href=\"' . route('customer.shops') . '\"'],
-                    ['type' => 'secondary', 'label' => 'Place Order', 'onclick' => 'window.location.href=\"' . route('customer.orders') . '\"']
+                    ['type' => 'primary', 'label' => 'View My Orders', 'onclick' => 'window.location.href=\"' . route('customer.orders') . '\"'],
+                    ['type' => 'secondary', 'label' => 'My Appointments', 'onclick' => 'window.location.href=\"' . route('customer.appointments') . '\"']
                 ]"
             />
         @endforelse

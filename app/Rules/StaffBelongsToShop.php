@@ -6,23 +6,25 @@ use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
 use App\Models\User;
 
+/**
+ * StaffBelongsToShop (Single-Shop Edition)
+ *
+ * In a single-shop system, any tailor_staff user is valid staff.
+ * The shop_id check is removed since all staff belong to the one shop.
+ */
 class StaffBelongsToShop implements ValidationRule
 {
-    protected $shopId;
-
-    public function __construct($shopId)
-    {
-        $this->shopId = $shopId;
-    }
+    // $shopId kept in constructor for backward compatibility but no longer used.
+    public function __construct(protected mixed $shopId = null) {}
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         if (!$value) {
-            return; // Allow null staff_id
+            return; // Null staff_id is allowed
         }
 
         $staff = User::find($value);
-        
+
         if (!$staff) {
             $fail('The selected staff member does not exist.');
             return;
@@ -30,12 +32,6 @@ class StaffBelongsToShop implements ValidationRule
 
         if ($staff->role !== 'tailor_staff') {
             $fail('The selected user is not a staff member.');
-            return;
-        }
-
-        if ($staff->shop_id != $this->shopId) {
-            $fail('The selected staff member does not belong to this shop.');
-            return;
         }
     }
 }

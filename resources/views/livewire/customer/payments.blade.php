@@ -309,7 +309,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                 title="No payments found"
                 description="No payment records match your current filter. Your payment history will appear here once you place orders."
                 :actions="[
-                    ['type' => 'primary', 'label' => 'Browse Shops', 'onclick' => 'window.location.href=\"' . route('customer.shops') . '\"'],
+                    ['type' => 'primary', 'label' => 'Place Order', 'onclick' => 'window.location.href=\"' . route('customer.orders') . '\"'],
                     ['type' => 'secondary', 'label' => 'View Orders', 'onclick' => 'window.location.href=\"' . route('customer.orders') . '\"']
                 ]"
             />

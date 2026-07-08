@@ -22,6 +22,15 @@ class PreMadeProduct extends Model
         'is_active',
     ];
 
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (empty($model->shop_id)) {
+                $model->shop_id = \App\Models\Shop::instance()->id;
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [

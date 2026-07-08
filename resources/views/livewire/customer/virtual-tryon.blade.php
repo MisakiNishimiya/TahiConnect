@@ -478,22 +478,23 @@ new #[Layout('components.layouts.app')] class extends Component {
             </svg>
         </button>
     </x-floating-action-button>
-</div>
 
-<script>
-function startProgress() {
-    let progress = 0;
-    const interval = setInterval(() => {
-        progress += Math.random() * 15 + 5;
-        if (progress > 100) progress = 100;
-        
-        @this.set('processingProgress', Math.floor(progress));
-        
-        if (progress >= 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-                @this.dispatch('preview-ready');
-            }, 500);
-        }
-    }, 800);
-}
+    <script>
+    function startProgress() {
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15 + 5;
+            if (progress > 100) progress = 100;
+            
+            @this.set('processingProgress', Math.floor(progress));
+            
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    @this.dispatch('preview-ready');
+                }, 500);
+            }
+        }, 800);
+    }
+    </script>
+</div>

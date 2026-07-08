@@ -12,10 +12,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function with(): array
     {
-        $user = auth()->user();
-        if (!$user->shop_id) abort(403);
         $orders = Order::with(['user', 'garmentType', 'staff'])
-            ->forCurrentUserShop()
             ->when($this->search, fn($q) => $q->where('tracking_number', 'like', "%{$this->search}%")->orWhereHas('user', fn($q2) => $q2->where('name', 'like', "%{$this->search}%")))
             ->when($this->status, fn($q) => $q->where('status', $this->status))
             ->latest()->paginate(15);

@@ -2,66 +2,58 @@
 
 namespace App\Traits;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * BelongsToShop Trait (Single-Shop Edition)
+ *
+ * In the single-shop system, every operational record belongs to the one shop.
+ * Super Admin has full read access for support/troubleshooting.
+ * Shop Owner has full operational access.
+ * Customers can only access their own records.
+ */
 trait BelongsToShop
 {
     /**
-     * Scope a query to only include records from the authenticated user's shop.
+     * Scope: return all records.
+     * In a single-shop deployment all records belong to this instance.
+     * Kept for backward compatibility — calls to forCurrentUserShop() still work.
      */
     public function scopeForCurrentUserShop(Builder $query): Builder
     {
-        $user = auth()->user();
-        
-        if (!$user) {
-            return $query->whereRaw('1 = 0'); // No results if not authenticated
-        }
-        
-        if ($user->isAdmin()) {
-            return $query; // Admins can see all
-        }
-        
-        if ($user->isShopOwner() || $user->isStaff()) {
-            return $query->where('shop_id', $user->shop_id);
-        }
-        
         return $query;
     }
-    
+
     /**
-     * Scope a query to only include records from a specific shop.
+     * Scope: filter by a specific shop_id (kept for explicit queries).
      */
     public function scopeForShop(Builder $query, $shopId): Builder
     {
         return $query->where('shop_id', $shopId);
     }
-    
+
     /**
-     * Check if the current user can access this record.
+     * Check if the authenticated user can access this record.
+     *
+     * - Super Admin: full access (support & troubleshooting)
+     * - Shop Owner:  full access (manages all business operations)
+     * - Tailor Staff: full access (processes orders & appointments)
+     * - Customer:    own records only
      */
     public function canBeAccessedByCurrentUser(): bool
     {
         $user = auth()->user();
-        
+
         if (!$user) {
             return false;
         }
-        
-        if ($user->isAdmin()) {
+
+        // Super Admin and Shop Owner have full access
+        if ($user->isSuperAdmin() || $user->isShopOwner() || $user->isStaff()) {
             return true;
         }
-        
-        if ($user->isCustomer()) {
-            // Customers can only access their own orders/appointments
-            return $this->user_id === $user->id;
-        }
-        
-        if ($user->isShopOwner() || $user->isStaff()) {
-            return $this->shop_id === $user->shop_id;
-        }
-        
-        return false;
+
+        // Customers can only access their own records
+        return isset($this->user_id) && $this->user_id === $user->id;
     }
 }

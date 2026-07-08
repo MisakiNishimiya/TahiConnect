@@ -8,18 +8,31 @@ new #[Layout('components.layouts.app')] class extends Component {
     public string $search = '';
     public string $roleFilter = '';
 
-    public function with(): array
+<?php
+// User management is now handled by the Shop Owner (manage customers/staff)
+// and Super Admin (manage shop owner accounts).
+// Redirect based on current user role.
+use Livewire\Attributes\Layout;
+use Livewire\Volt\Component;
+new #[Layout('components.layouts.app')] class extends Component {
+    public function mount(): mixed
     {
-        $query = User::query();
-        if ($this->search) $query->where(fn($q) => $q->where('name', 'like', "%{$this->search}%")->orWhere('email', 'like', "%{$this->search}%"));
-        if ($this->roleFilter) $query->where('role', $this->roleFilter);
+        $role = auth()->user()->role;
+        return match($role) {
+            'super_admin' => redirect()->route('superadmin.shop-owners'),
+            'shop_owner'  => redirect()->route('shopowner.customers'),
+            default       => redirect()->route('customer.dashboard'),
+        };
+    }
+}; ?>
+<div></div>
         return [
             'users' => $query->latest()->get(),
             'totalUsers' => User::count(),
             'customerCount' => User::where('role', 'customer')->count(),
             'staffCount' => User::where('role', 'tailor_staff')->count(),
             'ownerCount' => User::where('role', 'shop_owner')->count(),
-            'adminCount' => User::where('role', 'admin')->count(),
+            'superAdminCount' => User::where('role', 'super_admin')->count(),
         ];
     }
 }; ?>
@@ -39,7 +52,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             ['Customers', $customerCount, 'customer', 'from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/30', 'text-blue-600 dark:text-blue-400', 'border-blue-200 dark:border-blue-800', 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0z'],
             ['Tailor Staff', $staffCount, 'tailor_staff', 'from-emerald-100 to-emerald-200 dark:from-emerald-900/30 dark:to-emerald-800/30', 'text-emerald-600 dark:text-emerald-400', 'border-emerald-200 dark:border-emerald-800', 'M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63'],
             ['Shop Owners', $ownerCount, 'shop_owner', 'from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/30', 'text-amber-600 dark:text-amber-400', 'border-amber-200 dark:border-amber-800', 'M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18'],
-            ['Admins', $adminCount, 'admin', 'from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30', 'text-red-600 dark:text-red-400', 'border-red-200 dark:border-red-800', 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z'],
+            ['Super Admins', $superAdminCount, 'super_admin', 'from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/30', 'text-red-600 dark:text-red-400', 'border-red-200 dark:border-red-800', 'M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z'],
         ] as [$label, $count, $role, $bg, $color, $border, $icon])
         <div class="tc-card bg-gradient-to-br {{ $bg }} {{ $border }} hover-lift cursor-pointer {{ $roleFilter === $role ? 'ring-2 ring-primary-500' : '' }}"
              wire:click="$set('roleFilter', '{{ $roleFilter === $role ? '' : $role }}')">
@@ -67,7 +80,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             <option value="customer">Customer</option>
             <option value="tailor_staff">Tailor Staff</option>
             <option value="shop_owner">Shop Owner</option>
-            <option value="admin">Admin</option>
+            <option value="super_admin">Super Admin</option>
         </select>
     </div>
 

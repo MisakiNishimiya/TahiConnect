@@ -10,11 +10,21 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function mount()
     {
-        $this->shop = Shop::find(auth()->user()->shop_id);
+        $this->shop = Shop::instance();
     }
 
     public function save(): void
     {
+        $this->validate([
+            'shop.name'           => 'required|string|max:255',
+            'shop.contact_number' => 'nullable|string|max:50',
+            'shop.email'          => 'nullable|email|max:255',
+            'shop.description'    => 'nullable|string',
+            'shop.address'        => 'nullable|string|max:255',
+            'shop.barangay'       => 'nullable|string|max:100',
+        ]);
+
+        $this->shop->save();
         $this->saved = true;
         session()->flash('message', 'Shop settings saved successfully!');
     }

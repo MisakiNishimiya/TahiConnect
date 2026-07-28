@@ -84,7 +84,7 @@
 
     <main class="pt-20">
         <!-- 2. Hero Section -->
-        <section class="relative overflow-hidden bg-cream py-16 sm:py-24 lg:py-32">
+        <section class="relative overflow-hidden bg-cream py-10 sm:py-14 lg:py-20">
             <!-- Background Decorative Blobs -->
             <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-secondary-custom/20 blur-3xl opacity-60"></div>
             <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-[30rem] h-[30rem] rounded-full bg-primary-custom/10 blur-3xl opacity-60"></div>

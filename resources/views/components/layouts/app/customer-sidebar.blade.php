@@ -41,7 +41,6 @@
                     <flux:navlist.item icon="home" :href="route('customer.dashboard')" :current="request()->routeIs('customer.dashboard')" wire:navigate>Dashboard</flux:navlist.item>
                     <flux:navlist.item icon="building-storefront" :href="route('customer.catalog')" :current="request()->routeIs('customer.catalog')" wire:navigate>Our Catalog</flux:navlist.item>
                     <flux:navlist.item icon="banknotes" :href="route('customer.rates')" :current="request()->routeIs('customer.rates')" wire:navigate>Rates & Pricing</flux:navlist.item>
-                    <flux:navlist.item icon="chart-bar" :href="route('customer.measurements')" :current="request()->routeIs('customer.measurements')" wire:navigate>My Measurements</flux:navlist.item>
                     <flux:navlist.item icon="sparkles" :href="route('customer.virtual-tryon')" :current="request()->routeIs('customer.virtual-tryon')" wire:navigate>Virtual Try-On</flux:navlist.item>
                     <flux:navlist.item icon="calendar-days" :href="route('customer.appointments')" :current="request()->routeIs('customer.appointments')" wire:navigate>My Appointments</flux:navlist.item>
                     <flux:navlist.item icon="shopping-bag" :href="route('customer.orders')" :current="request()->routeIs('customer.orders')" wire:navigate>My Orders</flux:navlist.item>

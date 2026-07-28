@@ -73,6 +73,11 @@ class Order extends Model
         return $this->hasMany(ShopReview::class);
     }
 
+    public function measurement(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Measurement::class);
+    }
+
     // ── Status helpers ────────────────────────────────────────────────────────
 
     /**

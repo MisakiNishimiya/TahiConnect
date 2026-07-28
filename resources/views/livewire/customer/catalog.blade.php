@@ -39,7 +39,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function with(): array
     {
-        $shop = Shop::with('reviews.user')->instance();
+        $shop = Shop::with('reviews.user')->firstOrFail();
         $products = PreMadeProduct::where('is_active', true)
             ->when($this->search, fn($q) => $q->where('name', 'like', "%{$this->search}%")->orWhere('description', 'like', "%{$this->search}%"))
             ->get();
@@ -227,7 +227,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             </div>
 
             <!-- Order Button -->
-            <a href="{{ route('customer.orders') }}" wire:navigate
+            <a href="{{ route('customer.order-premade', ['product' => $product->id]) }}" wire:navigate
                 class="block w-full py-2.5 text-center text-sm font-semibold bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all shadow-sm hover:shadow-md hover:shadow-primary-500/20 click-feedback">
                 Order Now
             </a>

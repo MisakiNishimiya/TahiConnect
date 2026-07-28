@@ -12,7 +12,7 @@ new #[Layout('components.layouts.app')] class extends Component {
 
     public function with(): array
     {
-        $orders = Order::with(['user', 'garmentType', 'staff', 'designReferences'])
+        $orders = Order::with(['user', 'garmentType', 'preMadeProduct', 'staff', 'designReferences', 'measurement'])
             ->when($this->search, fn($q) => $q->where('tracking_number', 'like', "%{$this->search}%")->orWhereHas('user', fn($q2) => $q2->where('name', 'like', "%{$this->search}%")))
             ->when($this->status, fn($q) => $q->where('status', $this->status))
             ->latest()->paginate(15);
@@ -73,7 +73,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                                     <span class="font-medium text-zinc-900 dark:text-white">{{ $order->user?->name }}</span>
                                 </div>
                             </td>
-                            <td class="py-4 px-4 text-zinc-600 dark:text-zinc-400 hidden md:table-cell">{{ $order->garmentType?->name ?? '-' }} <span class="text-zinc-400">×{{ $order->quantity }}</span></td>
+                            <td class="py-4 px-4 text-zinc-600 dark:text-zinc-400 hidden md:table-cell">{{ $order->garmentType?->name ?? $order->preMadeProduct?->name ?? '-' }} <span class="text-zinc-400">×{{ $order->quantity }}</span></td>
                             <td class="py-4 px-4 hidden lg:table-cell">
                                 @if($order->staff)
                                     <div class="flex items-center gap-2">
@@ -102,6 +102,36 @@ new #[Layout('components.layouts.app')] class extends Component {
                                         @endif
                                         @if($order->product_size)
                                         <div class="flex gap-2"><span class="text-zinc-400 w-32 shrink-0">Size:</span><span class="text-zinc-700 dark:text-zinc-300">{{ $order->product_size }}</span></div>
+                                        @endif
+
+                                        {{-- Order-specific measurements (from pre-made compatibility flow) --}}
+                                        @if($order->measurement)
+                                        @php $m = $order->measurement; @endphp
+                                        <div class="mt-3 pt-3 border-t border-zinc-200">
+                                            <p class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                                                <svg class="w-3.5 h-3.5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5"/></svg>
+                                                Customer Measurements (order-specific)
+                                            </p>
+                                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                                                @foreach([
+                                                    'chest' => 'Chest',
+                                                    'waist' => 'Waist',
+                                                    'hip' => 'Hip',
+                                                    'shoulder' => 'Shoulder',
+                                                    'sleeve_length' => 'Sleeve',
+                                                    'inseam' => 'Inseam',
+                                                    'neck' => 'Neck',
+                                                    'height' => 'Height',
+                                                ] as $field => $label)
+                                                    @if($m->{$field} !== null)
+                                                    <div class="flex justify-between py-0.5">
+                                                        <span class="text-zinc-400">{{ $label }}:</span>
+                                                        <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ $m->{$field} }} cm</span>
+                                                    </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </div>
                                         @endif
                                     </div>
                                     {{-- Design References --}}

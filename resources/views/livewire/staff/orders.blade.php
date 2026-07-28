@@ -42,7 +42,7 @@ new #[Layout('components.layouts.app')] class extends Component {
     {
         $this->selectedOrder = Order::where('id', $orderId)
             ->where('staff_id', auth()->id())
-            ->with(['user', 'garmentType', 'designReferences'])
+            ->with(['user', 'garmentType', 'preMadeProduct', 'designReferences', 'measurement'])
             ->first();
         $this->showDetailModal = true;
     }
@@ -322,6 +322,34 @@ new #[Layout('components.layouts.app')] class extends Component {
                                 <p class="text-xs text-amber-600 font-medium mb-1">Special Instructions</p>
                                 <p class="text-sm text-amber-800">{{ $selectedOrder->special_instructions }}</p>
                             </div>
+                        @endif
+
+                        {{-- Order-specific measurements (from pre-made compatibility flow) --}}
+                        @if($selectedOrder->measurement)
+                        @php $m = $selectedOrder->measurement; @endphp
+                        <div class="p-4 bg-blue-50 rounded-xl border border-blue-200">
+                            <p class="text-xs text-blue-600 font-semibold uppercase tracking-wide mb-3 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5"/></svg>
+                                Customer Body Measurements (order-specific)
+                            </p>
+                            <div class="grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+                                @foreach([
+                                    'chest' => 'Chest', 'waist' => 'Waist', 'hip' => 'Hip',
+                                    'shoulder' => 'Shoulder', 'sleeve_length' => 'Sleeve',
+                                    'inseam' => 'Inseam', 'neck' => 'Neck', 'height' => 'Height',
+                                ] as $field => $label)
+                                    @if($m->{$field} !== null)
+                                    <div class="flex justify-between border-b border-blue-100 pb-1">
+                                        <span class="text-blue-600">{{ $label }}</span>
+                                        <span class="font-semibold text-blue-900">{{ $m->{$field} }} cm</span>
+                                    </div>
+                                    @endif
+                                @endforeach
+                            </div>
+                            @if($m->notes)
+                            <p class="text-xs text-blue-600 mt-2 italic">Note: {{ $m->notes }}</p>
+                            @endif
+                        </div>
                         @endif
 
                         {{-- Design References --}}

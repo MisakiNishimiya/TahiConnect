@@ -294,10 +294,9 @@ new #[Layout('components.layouts.app')] class extends Component {
                         @endif
                     </div>
                     
-                    <!-- Notification Content -->
-                    <div class="flex-1 min-w-0" wire:click="markAsRead({{ $notif->id }})">
-                        <div class="flex items-start justify-between gap-2 mb-2">
-                            <h3 class="font-semibold {{ !$notif->is_read ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-300' }} group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                        <div class="flex-1 min-w-0" wire:click="markAsRead({{ $notif->id }})">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <h3 class="font-semibold {{ !$notif->is_read ? 'text-zinc-900 dark:text-white' : 'text-zinc-700 dark:text-zinc-300' }} group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate">
                                 {{ $notif->title }}
                             </h3>
                             <div class="flex items-center gap-2 shrink-0">

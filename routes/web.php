@@ -22,7 +22,6 @@ Route::get('/dashboard', function () {
 // Customers are the end-clients of the tailoring business.
 Route::middleware(['auth'])->prefix('customer')->group(function () {
     Volt::route('/dashboard',     'customer.dashboard')->name('customer.dashboard');
-    Volt::route('/measurements',  'customer.measurements')->name('customer.measurements');
     Volt::route('/appointments',  'customer.appointments')->name('customer.appointments');
     Volt::route('/orders',        'customer.orders')->name('customer.orders');
     Volt::route('/virtual-tryon', 'customer.virtual-tryon')->name('customer.virtual-tryon');
@@ -32,6 +31,8 @@ Route::middleware(['auth'])->prefix('customer')->group(function () {
     Volt::route('/book',          'customer.book')->name('customer.book');
     Volt::route('/catalog',       'customer.catalog')->name('customer.catalog');
     Volt::route('/rates',         'customer.rates')->name('customer.rates');
+    // Pre-made garment ordering flow (measurement entry + tolerance validation)
+    Volt::route('/order-premade', 'customer.order-premade')->name('customer.order-premade');
 });
 
 // ── Super Admin Routes ────────────────────────────────────────────────────────

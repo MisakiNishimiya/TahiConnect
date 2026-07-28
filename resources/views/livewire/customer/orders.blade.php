@@ -22,11 +22,42 @@ new #[Layout('components.layouts.app')] class extends Component {
     public string $preferred_completion_date = '';
     public string $special_instructions = '';
 
+    // Measurements transferred from pre-made flow (conversion to custom)
+    public bool $fromPremadeConvert = false;
+    public array $transferredMeasurements = [];
+
     // Design Reference State
     public $reference_upload;
     public string $selected_ai_preview = '';
 
     public bool $showModal = false;
+
+    public function mount(): void
+    {
+        // When arriving from a failed pre-made compatibility check, open the
+        // custom order modal immediately and note the transferred measurements.
+        if (request()->query('from') === 'premade_convert' && session()->has('premade_to_custom_measurements')) {
+            $this->transferredMeasurements = session()->pull('premade_to_custom_measurements', []);
+            $this->fromPremadeConvert = true;
+            $this->showModal = true;
+            // Pre-fill special instructions with measurement notes so the
+            // tailor sees the body data without storing it as a profile.
+            $parts = [];
+            $labels = [
+                'chest' => 'Chest', 'waist' => 'Waist', 'hip' => 'Hip',
+                'shoulder' => 'Shoulder', 'sleeve_length' => 'Sleeve',
+                'inseam' => 'Inseam', 'neck' => 'Neck', 'height' => 'Height',
+            ];
+            foreach ($this->transferredMeasurements as $field => $value) {
+                if ($value !== '' && $value !== null) {
+                    $parts[] = ($labels[$field] ?? ucwords(str_replace('_', ' ', $field))) . ': ' . $value . ' cm';
+                }
+            }
+            if ($parts) {
+                $this->special_instructions = 'Body measurements from pre-made check: ' . implode(', ', $parts);
+            }
+        }
+    }
 
     public function nextStep(): void
     {
@@ -96,6 +127,7 @@ new #[Layout('components.layouts.app')] class extends Component {
             'currentStep', 'garment_type_id', 'fabric_preference', 'quantity',
             'preferred_completion_date', 'special_instructions',
             'reference_upload', 'selected_ai_preview', 'showModal',
+            'fromPremadeConvert', 'transferredMeasurements',
         ]);
         session()->flash('message', 'Order placed successfully!');
     }
@@ -103,6 +135,8 @@ new #[Layout('components.layouts.app')] class extends Component {
     public function closeModal(): void
     {
         $this->showModal = false;
+        $this->fromPremadeConvert = false;
+        $this->transferredMeasurements = [];
         $this->reset([
             'currentStep', 'garment_type_id', 'fabric_preference', 'quantity',
             'preferred_completion_date', 'special_instructions',
@@ -382,6 +416,14 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
+
+            {{-- Banner shown when converting from a failed pre-made compatibility check --}}
+            @if($fromPremadeConvert)
+            <div class="mx-8 mt-0 mb-0 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                <svg class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-sm text-amber-700">Your measurements from the pre-made check have been carried over to the notes below. The tailor will use them to create a garment fitted precisely to you.</p>
+            </div>
+            @endif
 
             <!-- Body Area -->
             <div class="flex-1 overflow-y-auto px-8 py-8 bg-zinc-50/50 dark:bg-zinc-900/50">

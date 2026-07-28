@@ -112,16 +112,16 @@ new #[Layout('components.layouts.app')] class extends Component {
                 </a>
             </div>
 
-            <!-- Measurements -->
+            <!-- Catalog (replaces standalone Measurements quick-action) -->
             <div class="flex flex-col items-center text-center group">
-                <a href="{{ route('customer.measurements') }}" wire:navigate class="flex flex-col items-center gap-3 w-full">
+                <a href="{{ route('customer.catalog') }}" wire:navigate class="flex flex-col items-center gap-3 w-full">
                     <div class="w-16 h-16 rounded-full bg-purple-50 dark:bg-purple-900/20 border-2 border-purple-200 dark:border-purple-800 flex items-center justify-center group-hover:border-purple-400 group-hover:bg-purple-100 transition-colors">
                         <svg class="w-7 h-7 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
                     </div>
                     <span class="w-full py-2 px-3 text-sm font-medium text-purple-600 bg-purple-50 dark:bg-purple-900/20 rounded-lg group-hover:bg-purple-100 dark:group-hover:bg-purple-900/30 transition-colors">
-                        My Measurements
+                        Our Catalog
                     </span>
                 </a>
             </div>

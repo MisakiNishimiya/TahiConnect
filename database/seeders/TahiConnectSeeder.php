@@ -176,17 +176,55 @@ class TahiConnectSeeder extends Seeder
         }
 
         // ── Pre-made Products ─────────────────────────────────────────────────
+        // measurement_standards = garment measurement (GM) per field in cm
+        // measurement_tolerances = tolerance value (T) per field in cm
+        // MV = |CM - GM|; valid when MV <= T
         $productData = [
-            ['Standard White Barong (RTW)',   'Classic semi-formal white barong, ready to wear.',        2500, ['XS','S','M','L','XL']],
-            ['Pre-made Formal Slacks',         'Straight-cut dark slacks for corporate or formal use.',   1200, ['28','30','32','34','36']],
-            ['Casual Linen Shirt',             'Relaxed-fit linen shirt ideal for tropical weather.',      950, ['S','M','L','XL']],
-            ['Filipiniana Shawl / Alampay',    'Traditional shawl to complement Filipiniana dresses.',    1800, ['Free Size']],
+            [
+                'name'        => 'Standard White Barong (RTW)',
+                'description' => 'Classic semi-formal white barong, ready to wear.',
+                'price'       => 2500,
+                'sizes'       => ['XS','S','M','L','XL'],
+                'standards'   => ['chest' => 96, 'shoulder' => 44, 'sleeve_length' => 60, 'neck' => 38],
+                'tolerances'  => ['chest' => 5,  'shoulder' => 2,  'sleeve_length' => 3,  'neck' => 2],
+            ],
+            [
+                'name'        => 'Pre-made Formal Slacks',
+                'description' => 'Straight-cut dark slacks for corporate or formal use.',
+                'price'       => 1200,
+                'sizes'       => ['28','30','32','34','36'],
+                'standards'   => ['waist' => 81, 'hip' => 97, 'inseam' => 79],
+                'tolerances'  => ['waist' => 3,  'hip' => 4,  'inseam' => 3],
+            ],
+            [
+                'name'        => 'Casual Linen Shirt',
+                'description' => 'Relaxed-fit linen shirt ideal for tropical weather.',
+                'price'       => 950,
+                'sizes'       => ['S','M','L','XL'],
+                'standards'   => ['chest' => 101, 'shoulder' => 46, 'sleeve_length' => 62],
+                'tolerances'  => ['chest' => 6,   'shoulder' => 3,  'sleeve_length' => 4],
+            ],
+            [
+                'name'        => 'Filipiniana Shawl / Alampay',
+                'description' => 'Traditional shawl to complement Filipiniana dresses.',
+                'price'       => 1800,
+                'sizes'       => ['Free Size'],
+                'standards'   => [],
+                'tolerances'  => [],
+            ],
         ];
         $products = [];
         foreach ($productData as $p) {
             $products[] = PreMadeProduct::firstOrCreate(
-                ['shop_id' => $shop->id, 'name' => $p[0]],
-                ['description' => $p[1], 'price' => $p[2], 'available_sizes' => $p[3], 'is_active' => true]
+                ['shop_id' => $shop->id, 'name' => $p['name']],
+                [
+                    'description'            => $p['description'],
+                    'price'                  => $p['price'],
+                    'available_sizes'        => $p['sizes'],
+                    'is_active'              => true,
+                    'measurement_standards'  => !empty($p['standards'])  ? $p['standards']  : null,
+                    'measurement_tolerances' => !empty($p['tolerances']) ? $p['tolerances'] : null,
+                ]
             );
         }
 

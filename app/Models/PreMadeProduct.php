@@ -20,6 +20,8 @@ class PreMadeProduct extends Model
         'image_url',
         'available_sizes',
         'is_active',
+        'measurement_standards',   // JSON: {"chest":96,"waist":80,...}  — garment measurement (GM) per field
+        'measurement_tolerances',  // JSON: {"chest":5,"waist":4,...}    — tolerance value (T) per field
     ];
 
     protected static function booted(): void
@@ -34,10 +36,21 @@ class PreMadeProduct extends Model
     protected function casts(): array
     {
         return [
-            'available_sizes' => 'array',
-            'is_active' => 'boolean',
-            'price' => 'decimal:2',
+            'available_sizes'        => 'array',
+            'is_active'              => 'boolean',
+            'price'                  => 'decimal:2',
+            'measurement_standards'  => 'array',  // GM values per measurement field
+            'measurement_tolerances' => 'array',  // T values per measurement field
         ];
+    }
+
+    /**
+     * Returns true when this product has measurement standards defined,
+     * meaning compatibility validation can be performed.
+     */
+    public function hasMeasurementStandards(): bool
+    {
+        return !empty($this->measurement_standards) && !empty($this->measurement_tolerances);
     }
 
     public function shop(): BelongsTo

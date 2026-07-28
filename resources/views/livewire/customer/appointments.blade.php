@@ -250,15 +250,19 @@ new #[Layout('components.layouts.app')] class extends Component {
                     </div>
                 </div>
             @empty
-                <x-enhanced-empty-state
-                    icon="calendar"
-                    title="No upcoming appointments"
-                    description="You don't have any fittings or consultations scheduled. Book your first appointment!"
-                    :actions="[
-                        ['type' => 'primary', 'label' => 'Book Appointment', 'onclick' => 'window.location.href=\"' . route('customer.book') . '\"'],
-                        ['type' => 'secondary', 'label' => 'View Catalog', 'onclick' => 'window.location.href=\"' . route('customer.catalog') . '\"']
-                    ]"
-                />
+                <div class="tc-card text-center py-16 animate-fade-in-up">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center">
+                        <svg class="w-12 h-12 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">No upcoming appointments</h3>
+                    <p class="text-zinc-500 mb-6 max-w-md mx-auto">You don't have any fittings or consultations scheduled. Book your first appointment!</p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <a href="{{ route('customer.book') }}" class="px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors click-feedback font-medium">Book Appointment</a>
+                        <a href="{{ route('customer.catalog') }}" class="px-6 py-3 border border-primary-200 text-primary-600 dark:border-primary-700 dark:text-primary-400 rounded-xl hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors click-feedback font-medium">View Catalog</a>
+                    </div>
+                </div>
             @endforelse
         </div>
     @endif
@@ -311,14 +315,18 @@ new #[Layout('components.layouts.app')] class extends Component {
                     </div>
                 </div>
             @empty
-                <x-enhanced-empty-state
-                    icon="calendar"
-                    title="No appointment history"
-                    description="You haven't had any appointments yet. Your completed and cancelled appointments will appear here."
-                    :actions="[
-                        ['type' => 'primary', 'label' => 'Book First Appointment', 'onclick' => 'window.location.href=\"' . route('customer.book') . '\"']
-                    ]"
-                />
+                <div class="tc-card text-center py-16 animate-fade-in-up">
+                    <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-700 flex items-center justify-center">
+                        <svg class="w-12 h-12 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-zinc-700 dark:text-zinc-300 mb-2">No appointment history</h3>
+                    <p class="text-zinc-500 mb-6 max-w-md mx-auto">You haven't had any appointments yet. Your completed and cancelled appointments will appear here.</p>
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <a href="{{ route('customer.book') }}" class="px-6 py-3 bg-primary-500 text-white rounded-xl hover:bg-primary-600 transition-colors click-feedback font-medium">Book First Appointment</a>
+                    </div>
+                </div>
             @endforelse
         </div>
     @endif

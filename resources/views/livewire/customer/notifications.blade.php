@@ -133,7 +133,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-2xl bg-blue-500 flex items-center justify-center">
                             <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5-5 5-5h-5m-6 10v-2a3 3 0 00-3-3H5a3 3 0 00-3 3v2a1 1 0 001 1h6a1 1 0 001-1z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
                             </svg>
                         </div>
                         <div>
@@ -260,12 +260,10 @@ new #[Layout('components.layouts.app')] class extends Component {
                  @mouseleave="showActions = false">
                  
                 <!-- Notification Content -->
-                <div class="flex items-start gap-4 {{ !$notif->is_read ? 'relative' : '' }}">
+                <div class="flex items-center gap-4">
                     
                     <!-- Unread Indicator -->
-                    @if(!$notif->is_read)
-                        <div class="absolute -left-2 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-gradient-to-b from-primary-400 to-primary-600 rounded-full"></div>
-                    @endif
+                    <div class="w-1 self-stretch rounded-full {{ !$notif->is_read ? 'bg-gradient-to-b from-primary-400 to-primary-600' : 'bg-transparent' }}"></div>
 
                     <!-- Enhanced Icon -->
                     <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border transition-all duration-300 group-hover:scale-110

@@ -86,9 +86,24 @@ new #[Layout('components.layouts.auth')] class extends Component {
                     <a href="{{ route('password.request') }}" wire:navigate class="text-xs text-primary-600 dark:text-primary-400 hover:text-primary-700 font-medium">Forgot password?</a>
                 @endif
             </div>
-            <input wire:model="password" type="password" name="password" required autocomplete="current-password"
-                placeholder="Your password"
-                class="w-full px-4 py-3 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm" />
+            <div class="relative" x-data="{ show: false }">
+                <input wire:model="password" :type="show ? 'text' : 'password'" name="password" required autocomplete="current-password"
+                    placeholder="Your password"
+                    class="w-full px-4 py-3 pr-12 border border-zinc-200 dark:border-zinc-700 rounded-xl bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white placeholder-zinc-400 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 text-sm" />
+                <button type="button" @click="show = !show"
+                    class="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 focus:outline-none"
+                    :aria-label="show ? 'Hide password' : 'Show password'">
+                    <!-- Eye icon (password hidden) -->
+                    <svg x-show="!show" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                    <!-- Eye-off icon (password visible) -->
+                    <svg x-show="show" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.063-3.362M6.53 6.53A9.97 9.97 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.97 9.97 0 01-4.073 5.14M15 12a3 3 0 00-3-3m0 0a3 3 0 00-2.121.879M3 3l18 18"/>
+                    </svg>
+                </button>
+            </div>
             @error('password') <p class="text-xs text-red-500 mt-1">{{ $message }}</p> @enderror
         </div>
 

@@ -19,6 +19,10 @@ Route::middleware('guest')->group(function () {
 
 });
 
+// TODO: move back inside auth middleware after UI testing
+Volt::route('two-factor', 'auth.two-factor')
+    ->name('two-factor.challenge');
+
 Route::middleware('auth')->group(function () {
     Volt::route('verify-email', 'auth.verify-email')
         ->name('verification.notice');

@@ -35,6 +35,31 @@ Route::middleware(['auth'])->prefix('customer')->group(function () {
     Volt::route('/order-premade', 'customer.order-premade')->name('customer.order-premade');
 });
 
+// ── API Routes for Virtual Try-On (Google Gemini) ──────────────────────
+// New clean Gemini-based endpoint
+Route::middleware(['auth'])->post('/api/tryon', [\App\Http\Controllers\TryOnController::class, 'generateTryOn'])->name('api.tryon.generate');
+
+// Status endpoint is public for health checks
+Route::get('api/tryon-legacy/status', [\App\Http\Controllers\VirtualTryOnController::class, 'status'])->name('api.tryon-legacy.status');
+
+// Legacy endpoints for backward compatibility
+Route::middleware(['auth'])->prefix('api/tryon-legacy')->name('api.tryon-legacy.')->group(function () {
+    Route::post('/process', [\App\Http\Controllers\VirtualTryOnController::class, 'process'])->name('process');
+    Route::get('/history', [\App\Http\Controllers\VirtualTryOnController::class, 'history'])->name('history');
+    Route::delete('/{filename}', [\App\Http\Controllers\VirtualTryOnController::class, 'delete'])->name('delete');
+});
+
+// ── API Routes for Virtual Try-On (Legacy) ───────────────────────────────────────────
+Route::middleware(['auth'])->prefix('api/virtual-tryon')->name('api.virtual-tryon.')->group(function () {
+    Route::post('/upload-photo', [\App\Http\Controllers\VirtualTryOnController::class, 'uploadPhoto'])->name('upload-photo');
+    Route::post('/upload-garment', [\App\Http\Controllers\VirtualTryOnController::class, 'uploadGarment'])->name('upload-garment');
+    Route::post('/process', [\App\Http\Controllers\VirtualTryOnController::class, 'process'])->name('process');
+    Route::get('/status/{id}', [\App\Http\Controllers\VirtualTryOnController::class, 'status'])->name('status');
+    Route::get('/recent', [\App\Http\Controllers\VirtualTryOnController::class, 'recent'])->name('recent');
+    Route::post('/save', [\App\Http\Controllers\VirtualTryOnController::class, 'save'])->name('save');
+    Route::delete('/{id}', [\App\Http\Controllers\VirtualTryOnController::class, 'delete'])->name('delete');
+});
+
 // ── Super Admin Routes ────────────────────────────────────────────────────────
 // Super Admin = TahiConnect platform owner.
 // Manages system configuration, shop owner accounts, audit logs,

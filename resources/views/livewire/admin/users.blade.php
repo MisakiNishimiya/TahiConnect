@@ -88,6 +88,7 @@ new #[Layout('components.layouts.app')] class extends Component {
                         <th class="text-right py-4 px-4 font-semibold text-zinc-500">Actions</th>
                     </tr>
                 </thead>
+
                 <tbody class="divide-y divide-zinc-50 dark:divide-zinc-800">
                     @forelse($users as $user)
                         <tr class="hover:bg-cream-50 dark:hover:bg-zinc-700/30 transition-colors duration-200 group">

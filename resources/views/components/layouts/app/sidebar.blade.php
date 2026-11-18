@@ -126,7 +126,9 @@
             </flux:dropdown>
         </flux:header>
 
-        {{ $slot }}
+        <flux:main class="p-6 lg:p-8">
+            {{ $slot }}
+        </flux:main>
 
         @fluxScripts
     </body>

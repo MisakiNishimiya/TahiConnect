@@ -110,7 +110,9 @@
             </flux:dropdown>
         </flux:header>
 
-        {{ $slot }}
+        <flux:main class="p-6 lg:p-8">
+            {{ $slot }}
+        </flux:main>
 
         <!-- Mobile Bottom Navigation (Staff) -->
         <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-700 safe-bottom shadow-lg">

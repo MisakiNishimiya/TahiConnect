@@ -38,7 +38,8 @@ RUN npm install && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html && \
-    chmod -R 755 /var/www/html
+    chmod -R 755 /var/www/html/storage && \
+    chmod -R 755 /var/www/html/bootstrap/cache
 
 # Configure Apache for Laravel
 RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
@@ -64,8 +65,7 @@ RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
 EOF
 
 # Create storage directories
-RUN mkdir -p storage/logs storage/framework/views storage/framework/cache && \
-    chmod -R 777 storage bootstrap/cache
+RUN mkdir -p storage/logs storage/framework/views storage/framework/cache
 
 EXPOSE 80
 

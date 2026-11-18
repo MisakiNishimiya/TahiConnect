@@ -14,16 +14,15 @@ RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \
     nodejs \
-    npm
+    npm && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
     mbstring \
-    xml \
-    curl \
-    bcmath
+    xml
 
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer

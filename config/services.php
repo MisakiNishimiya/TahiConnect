@@ -39,4 +39,9 @@ return [
         'timeout' => env('TRYON_API_TIMEOUT', 120),
     ],
 
+    'decart' => [
+        'api_key' => env('DECART_API_KEY'),
+        'model' => env('DECART_MODEL', 'lucy-vton-latest'),
+    ],
+
 ];

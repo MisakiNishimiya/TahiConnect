@@ -3,6 +3,9 @@
  * All frontend-only, no backend interactions.
  */
 
+// ─── Import Decart Virtual Try-On Module ──────────────────────────────────
+import './decart-virtual-tryon.js';
+
 // ─── Livewire Navigation Progress Bar ──────────────────────────────────────
 
 document.addEventListener('livewire:navigating', () => {

@@ -24,7 +24,7 @@ Route::middleware(['auth'])->prefix('customer')->group(function () {
     Volt::route('/dashboard',     'customer.dashboard')->name('customer.dashboard');
     Volt::route('/appointments',  'customer.appointments')->name('customer.appointments');
     Volt::route('/orders',        'customer.orders')->name('customer.orders');
-    Volt::route('/virtual-tryon', 'customer.virtual-tryon')->name('customer.virtual-tryon');
+    Volt::route('/virtual-tryon', 'customer.virtual-tryon-decart')->name('customer.virtual-tryon');
     Volt::route('/tracking',      'customer.tracking')->name('customer.tracking');
     Volt::route('/payments',      'customer.payments')->name('customer.payments');
     Volt::route('/notifications', 'customer.notifications')->name('customer.notifications');
@@ -41,6 +41,13 @@ Route::middleware(['auth'])->post('/api/tryon', [\App\Http\Controllers\TryOnCont
 
 // Status endpoint is public for health checks
 Route::get('api/tryon-legacy/status', [\App\Http\Controllers\VirtualTryOnController::class, 'status'])->name('api.tryon-legacy.status');
+
+// ── Decart AI Virtual Try-On Endpoints ─────────────────────────────────
+Route::middleware(['auth'])->group(function () {
+    Route::post('/api/decart/token', [\App\Http\Controllers\DecartTokenController::class, 'getToken'])->name('api.decart.token');
+    Route::get('/api/decart/health', [\App\Http\Controllers\DecartTokenController::class, 'health'])->name('api.decart.health');
+    Route::post('/api/decart/save-tryon', [\App\Http\Controllers\DecartTokenController::class, 'saveTryOn'])->name('api.decart.save-tryon');
+});
 
 // Legacy endpoints for backward compatibility
 Route::middleware(['auth'])->prefix('api/tryon-legacy')->name('api.tryon-legacy.')->group(function () {

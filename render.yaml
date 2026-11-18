@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: tahiconnect
+    env: docker
+    dockerfilePath: ./Dockerfile
+    region: ohio
+    envVars:
+      - key: APP_NAME
+        value: TahiConnect
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        value: base64:MeRYa0WTKuYyw3nzvnv00ERXaccd9LrQn7eRJYEfWeg=
+      - key: DECART_API_KEY
+        value: dct_tahiconnect_OYUetBgXpWHfozTJrAYvyctjvIvTLBfWNFVHOyaAZlpSeEQIdOOwSKMzxABLtboi
+      - key: DECART_MODEL
+        value: lucy-vton-3.6
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: FILESYSTEM_DISK
+        value: public
+
+  - type: pgsql
+    name: tahiconnect-db
+    region: ohio
+    ipAllowList: []

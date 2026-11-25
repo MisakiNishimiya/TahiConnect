@@ -34,11 +34,19 @@ class DecartTokenController extends Controller
             \Log::error('Failed to generate Decart token', [
                 'error' => $e->getMessage(),
                 'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString(),
             ]);
+
+            // Provide user-friendly error message
+            $userMessage = $e->getMessage();
+            if (str_contains($userMessage, 'Could not resolve host')) {
+                $userMessage = 'Unable to connect to Decart AI service. This may be due to network restrictions on the server. Please contact support or try again later.';
+            }
 
             return response()->json([
                 'error' => 'Failed to generate token',
-                'message' => $e->getMessage(),
+                'message' => $userMessage,
+                'debug' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }

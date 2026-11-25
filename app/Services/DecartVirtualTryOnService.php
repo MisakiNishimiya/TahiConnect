@@ -33,9 +33,11 @@ class DecartVirtualTryOnService
             Log::info('Creating Decart client token');
 
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->apiKey}",
+                'x-api-key' => $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->post('https://api.platform.decart.ai/v1/client/tokens');
+            ])->send('POST', 'https://api.decart.ai/v1/client/tokens', [
+                'body' => json_encode(null)
+            ]);
 
             if (!$response->successful()) {
                 throw new Exception("Token creation failed: {$response->body()}");
@@ -76,9 +78,9 @@ class DecartVirtualTryOnService
             ]);
 
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->apiKey}",
+                'x-api-key' => $this->apiKey,
                 'Content-Type' => 'application/json',
-            ])->post('https://api.platform.decart.ai/v1/lucy/vton-latest/process', [
+            ])->post('https://api.decart.ai/v1/lucy/vton-latest/process', [
                 'person' => "data:image/jpeg;base64,{$personImageBase64}",
                 'garment' => "data:image/jpeg;base64,{$garmentImageBase64}",
                 'prompt' => $prompt,
@@ -113,8 +115,8 @@ class DecartVirtualTryOnService
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->apiKey}",
-            ])->get("https://api.platform.decart.ai/v1/tasks/{$taskId}");
+                'x-api-key' => $this->apiKey,
+            ])->get("https://api.decart.ai/v1/tasks/{$taskId}");
 
             if (!$response->successful()) {
                 throw new Exception("Status check failed: {$response->body()}");
@@ -169,10 +171,10 @@ class DecartVirtualTryOnService
     {
         try {
             $response = Http::withHeaders([
-                'Authorization' => "Bearer {$this->apiKey}",
+                'x-api-key' => $this->apiKey,
             ])
                 ->timeout(10)
-                ->get('https://api.platform.decart.ai/v1/models');
+                ->get('https://api.decart.ai/v1/models');
 
             if ($response->successful()) {
                 return [

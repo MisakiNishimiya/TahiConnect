@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-install \
     pdo \
     pdo_pgsql \
+    pdo_sqlite \
     mbstring \
     xml
 
@@ -33,13 +34,21 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
+# Generate application key
+RUN php artisan key:generate --force || true
+
 # Install and build frontend
 RUN npm install && npm run build
+
+# Create SQLite database and run migrations
+RUN touch database/database.sqlite && \
+    php artisan migrate --force
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html/storage && \
-    chmod -R 755 /var/www/html/bootstrap/cache
+    chmod -R 755 /var/www/html/bootstrap/cache && \
+    chmod -R 755 /var/www/html/database
 
 # Configure Apache for Laravel
 RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'

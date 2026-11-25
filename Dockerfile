@@ -64,8 +64,13 @@ RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
         
         <IfModule mod_rewrite.c>
             RewriteEngine On
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteBase /
+            # Don't rewrite if it's a real file
+            RewriteCond %{REQUEST_FILENAME} -f [OR]
+            # Don't rewrite if it's a real directory
+            RewriteCond %{REQUEST_FILENAME} -d
+            RewriteRule ^ - [L]
+            # Rewrite everything else to index.php
             RewriteRule ^ index.php [QSA,L]
         </IfModule>
     </Directory>

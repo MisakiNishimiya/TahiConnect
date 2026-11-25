@@ -65,7 +65,7 @@ class TahiConnectSeeder extends Seeder
                 'last_name'      => 'Admin',
                 'password'       => Hash::make('password'),
                 'contact_number' => '+63 917 000 0001',
-                'role'           => 'super_admin',
+                'role'           => 'admin',
             ]
         );
 

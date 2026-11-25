@@ -1,0 +1,36 @@
+{
+  "node_modules/@decartai/sdk/dist/realtime/browser/frame-metadata-worker.js": {
+    "file": "assets/frame-metadata-worker-CjzDfgmy.js",
+    "src": "node_modules/@decartai/sdk/dist/realtime/browser/frame-metadata-worker.js"
+  },
+  "node_modules/jose/dist/webapi/index.js": {
+    "file": "assets/index-BGkDfZ8S.js",
+    "name": "index",
+    "src": "node_modules/jose/dist/webapi/index.js",
+    "isDynamicEntry": true
+  },
+  "node_modules/livekit-client/dist/livekit-client.esm.mjs": {
+    "file": "assets/livekit-client.esm-BuN0JOB9.js",
+    "name": "livekit-client.esm",
+    "src": "node_modules/livekit-client/dist/livekit-client.esm.mjs",
+    "isDynamicEntry": true
+  },
+  "resources/css/app.css": {
+    "file": "assets/app-CvTeQoQi.css",
+    "src": "resources/css/app.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-CidP9uax.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "node_modules/jose/dist/webapi/index.js",
+      "node_modules/livekit-client/dist/livekit-client.esm.mjs"
+    ],
+    "assets": [
+      "assets/frame-metadata-worker-CjzDfgmy.js"
+    ]
+  }
+}

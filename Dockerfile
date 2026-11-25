@@ -50,7 +50,8 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html/storage && \
     chmod -R 755 /var/www/html/bootstrap/cache && \
-    chmod -R 755 /var/www/html/database
+    chmod -R 755 /var/www/html/database && \
+    chmod -R 755 /var/www/html/public/build
 
 # Configure Apache for Laravel
 RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'

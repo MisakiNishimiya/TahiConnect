@@ -4,7 +4,7 @@ set -e
 # Create .env file from environment variables if it doesn't exist
 if [ ! -f /var/www/html/.env ]; then
     echo "Creating .env file from environment variables..."
-    cat > /var/www/html/.env << EOF
+    cat > /var/www/html/.env << 'ENVEOF'
 APP_NAME=${APP_NAME:-Laravel}
 APP_ENV=${APP_ENV:-production}
 APP_KEY=${APP_KEY}
@@ -29,19 +29,10 @@ DECART_API_KEY=${DECART_API_KEY}
 DECART_MODEL=${DECART_MODEL:-lucy-vton-3.6}
 
 FILESYSTEM_DISK=${FILESYSTEM_DISK:-local}
-EOF
+ENVEOF
     chown www-data:www-data /var/www/html/.env
     chmod 644 /var/www/html/.env
 fi
-
-echo "Running database migrations..."
-php artisan migrate --force
-
-echo "Clearing caches..."
-php artisan config:cache || true
-php artisan view:clear || true
-# Skip route caching for now - Volt pages might not cache properly
-# php artisan route:cache || true
 
 # Create storage directories with correct permissions
 mkdir -p /var/www/html/storage/logs
@@ -50,9 +41,17 @@ mkdir -p /var/www/html/storage/framework/cache
 chown -R www-data:www-data /var/www/html/storage
 chmod -R 777 /var/www/html/storage
 
-# Tail the Laravel log to stdout so we see errors
+# Ensure laravel.log exists and is writable
 touch /var/www/html/storage/logs/laravel.log
 chown www-data:www-data /var/www/html/storage/logs/laravel.log
+chmod 666 /var/www/html/storage/logs/laravel.log
+
+echo "Running database migrations..."
+php artisan migrate --force
+
+echo "Clearing caches..."
+php artisan config:cache || true
+php artisan view:clear || true
 
 echo "Starting Apache..."
 exec apache2-foreground

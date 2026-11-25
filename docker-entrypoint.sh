@@ -28,7 +28,7 @@ DECART_API_KEY=${DECART_API_KEY}
 DECART_MODEL=${DECART_MODEL:-lucy-vton-3.6}
 
 FILESYSTEM_DISK=${FILESYSTEM_DISK:-local}
-ASSET_URL=${ASSET_URL:-}
+ASSET_URL=${ASSET_URL}
 ENVEOF
 chown www-data:www-data /var/www/html/.env
 chmod 644 /var/www/html/.env
@@ -51,7 +51,6 @@ php artisan migrate --force
 echo "Clearing all caches..."
 rm -f /var/www/html/bootstrap/cache/*.php || true
 php artisan cache:clear
-php artisan config:clear  
 php artisan view:clear
 
 echo "Starting Apache..."

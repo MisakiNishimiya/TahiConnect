@@ -2,6 +2,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta name="description" content="TahiConnect — AI-Powered Tailoring Service Management with Virtual Try-On, Real-Time Order Tracking, and Digital Appointments." />
 <meta name="theme-color" content="#2F5D50" />
+<meta name="csrf-token" content="{{ csrf_token() }}" />
 
 <title>{{ $title ?? 'TahiConnect' }} — AI-Powered Tailoring</title>
 

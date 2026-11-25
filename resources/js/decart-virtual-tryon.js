@@ -16,10 +16,23 @@ window.currentRtClient = null;
 async function apiKeyProvider() {
     console.log('apiKeyProvider: Fetching short-lived token from server...');
     try {
-        const response = await fetch('/api/decart/token', { method: 'POST' });
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        const response = await fetch('/api/decart/token', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+        });
+        
         if (!response.ok) {
-            throw new Error(`Token request failed: ${response.status}`);
+            const errorText = await response.text();
+            throw new Error(`Token request failed: ${response.status} - ${errorText}`);
         }
+        
         const data = await response.json();
         console.log('apiKeyProvider: Token received, expires at:', data.expiresAt);
         return data.clientToken;
@@ -162,14 +175,22 @@ async function saveDecartResult() {
             const formData = new FormData();
             formData.append('image', blob, 'tryon-result.jpg');
 
+            // Get CSRF token from meta tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
             try {
                 const response = await fetch('/api/decart/save-tryon', {
                     method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
                     body: formData,
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Save failed: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`Save failed: ${response.status} - ${errorText}`);
                 }
 
                 const result = await response.json();

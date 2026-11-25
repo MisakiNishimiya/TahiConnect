@@ -29,6 +29,7 @@ DECART_API_KEY=${DECART_API_KEY}
 DECART_MODEL=${DECART_MODEL:-lucy-vton-3.6}
 
 FILESYSTEM_DISK=${FILESYSTEM_DISK:-local}
+ASSET_URL=${ASSET_URL:-}
 ENVEOF
     chown www-data:www-data /var/www/html/.env
     chmod 644 /var/www/html/.env

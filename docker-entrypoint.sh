@@ -8,7 +8,7 @@ if [ ! -f /var/www/html/.env ]; then
 APP_NAME=${APP_NAME:-Laravel}
 APP_ENV=${APP_ENV:-production}
 APP_KEY=${APP_KEY}
-APP_DEBUG=${APP_DEBUG:-false}
+APP_DEBUG=${APP_DEBUG:-true}
 APP_URL=${APP_URL:-http://localhost}
 
 DB_CONNECTION=${DB_CONNECTION:-sqlite}
@@ -36,6 +36,10 @@ fi
 
 echo "Running database migrations..."
 php artisan migrate --force
+
+echo "Clearing caches..."
+php artisan config:cache || true
+php artisan route:cache || true
 
 echo "Starting Apache..."
 exec apache2-foreground

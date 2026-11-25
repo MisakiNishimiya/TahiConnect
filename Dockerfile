@@ -69,6 +69,10 @@ RUN cat > /etc/apache2/sites-available/000-default.conf << 'EOF'
         </IfModule>
     </Directory>
     
+    # Log PHP errors
+    php_flag display_errors on
+    php_value error_log /var/www/html/storage/logs/php-errors.log
+    
     <Directory /var/www/html/storage>
         Deny from all
     </Directory>

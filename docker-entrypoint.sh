@@ -54,4 +54,9 @@ php artisan config:cache || true
 php artisan view:clear || true
 
 echo "Starting Apache..."
+
+# Monitor logs in background
+tail -f /var/www/html/storage/logs/laravel.log 2>/dev/null &
+tail -f /var/www/html/storage/logs/php-errors.log 2>/dev/null &
+
 exec apache2-foreground

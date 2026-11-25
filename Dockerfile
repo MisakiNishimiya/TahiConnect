@@ -39,9 +39,6 @@ RUN composer install --no-dev --optimize-autoloader
 # Generate application key
 RUN php artisan key:generate --force || true
 
-# Install and build frontend
-RUN npm install && npm run build
-
 # Copy entrypoint script
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

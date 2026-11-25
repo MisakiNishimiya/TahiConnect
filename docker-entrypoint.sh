@@ -39,7 +39,20 @@ php artisan migrate --force
 
 echo "Clearing caches..."
 php artisan config:cache || true
-php artisan route:cache || true
+php artisan view:clear || true
+# Skip route caching for now - Volt pages might not cache properly
+# php artisan route:cache || true
+
+# Create storage directories with correct permissions
+mkdir -p /var/www/html/storage/logs
+mkdir -p /var/www/html/storage/framework/sessions
+mkdir -p /var/www/html/storage/framework/cache
+chown -R www-data:www-data /var/www/html/storage
+chmod -R 777 /var/www/html/storage
+
+# Tail the Laravel log to stdout so we see errors
+touch /var/www/html/storage/logs/laravel.log
+chown www-data:www-data /var/www/html/storage/logs/laravel.log
 
 echo "Starting Apache..."
 exec apache2-foreground

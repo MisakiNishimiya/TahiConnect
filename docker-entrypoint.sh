@@ -48,6 +48,9 @@ chmod 666 /var/www/html/storage/logs/laravel.log
 echo "Running database migrations..."
 php artisan migrate --force
 
+echo "Seeding database with demo data..."
+php artisan db:seed --force
+
 echo "Clearing all caches..."
 rm -f /var/www/html/bootstrap/cache/*.php || true
 php artisan cache:clear

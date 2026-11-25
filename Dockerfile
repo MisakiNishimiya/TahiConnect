@@ -7,6 +7,8 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     libonig-dev \
     libxml2-dev \
+    sqlite3 \
+    libsqlite3-dev \
     zip \
     curl \
     git \

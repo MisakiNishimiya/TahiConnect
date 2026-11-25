@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Appointment;
 use App\Observers\OrderObserver;
 use App\Observers\AppointmentObserver;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,5 +27,10 @@ class AppServiceProvider extends ServiceProvider
         // Register model observers for data validation
         Order::observe(OrderObserver::class);
         Appointment::observe(AppointmentObserver::class);
+        
+        // Force HTTPS URLs in production (for Render deployment)
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }

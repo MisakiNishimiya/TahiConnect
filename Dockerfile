@@ -40,9 +40,9 @@ RUN php artisan key:generate --force || true
 # Install and build frontend
 RUN npm install && npm run build
 
-# Create SQLite database and run migrations
-RUN touch database/database.sqlite && \
-    php artisan migrate --force
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html && \
@@ -78,4 +78,4 @@ RUN mkdir -p storage/logs storage/framework/views storage/framework/cache
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]

@@ -1,14 +1,13 @@
 #!/bin/bash
 set -e
 
-# Create .env file from environment variables if it doesn't exist
-if [ ! -f /var/www/html/.env ]; then
-    echo "Creating .env file from environment variables..."
-    cat > /var/www/html/.env << 'ENVEOF'
+# Always create/update .env file from environment variables
+echo "Creating/updating .env file from environment variables..."
+cat > /var/www/html/.env << 'ENVEOF'
 APP_NAME=${APP_NAME:-Laravel}
 APP_ENV=${APP_ENV:-production}
 APP_KEY=${APP_KEY}
-APP_DEBUG=${APP_DEBUG:-true}
+APP_DEBUG=${APP_DEBUG:-false}
 APP_URL=${APP_URL:-https://tahiconnect.onrender.com}
 
 DB_CONNECTION=${DB_CONNECTION:-sqlite}
@@ -23,7 +22,7 @@ SESSION_DRIVER=${SESSION_DRIVER:-file}
 QUEUE_CONNECTION=${QUEUE_CONNECTION:-sync}
 
 LOG_CHANNEL=${LOG_CHANNEL:-stack}
-LOG_LEVEL=${LOG_LEVEL:-debug}
+LOG_LEVEL=${LOG_LEVEL:-info}
 
 DECART_API_KEY=${DECART_API_KEY}
 DECART_MODEL=${DECART_MODEL:-lucy-vton-3.6}
@@ -31,9 +30,8 @@ DECART_MODEL=${DECART_MODEL:-lucy-vton-3.6}
 FILESYSTEM_DISK=${FILESYSTEM_DISK:-local}
 ASSET_URL=${ASSET_URL:-}
 ENVEOF
-    chown www-data:www-data /var/www/html/.env
-    chmod 644 /var/www/html/.env
-fi
+chown www-data:www-data /var/www/html/.env
+chmod 644 /var/www/html/.env
 
 # Create storage directories with correct permissions
 mkdir -p /var/www/html/storage/logs
@@ -50,9 +48,11 @@ chmod 666 /var/www/html/storage/logs/laravel.log
 echo "Running database migrations..."
 php artisan migrate --force
 
-echo "Clearing caches..."
-php artisan config:cache || true
-php artisan view:clear || true
+echo "Clearing all caches..."
+rm -f /var/www/html/bootstrap/cache/*.php || true
+php artisan cache:clear
+php artisan config:clear  
+php artisan view:clear
 
 echo "Starting Apache..."
 
